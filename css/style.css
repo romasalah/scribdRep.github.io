@@ -7,87 +7,112 @@
     }
 }
 
-.rotating-icon {
-    display: inline-block;
-    animation: spin 1s linear infinite;
+/* Base styles */
+html, body {
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    position: fixed;
+    width: 100%;
+    height: 100%;
 }
 
 body {
-    background-image: url('../images/forest.jpg'); /* Replace with the path to your image */
-    background-size: cover; /* Ensures the image covers the entire background */
-    background-repeat: no-repeat; /* Prevents the image from repeating */
-    background-position: center; /* Centers the image */
-    min-height: 100vh; /* Ensures the body covers the full viewport height */
-    margin: 0; /* Removes any default margins */
+    background-image: url('../images/forest.jpg');
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center;
 }
 
+/* Navigation */
 nav {
-    padding: 7rem;
-    display: flex;
-    justify-content: center; /* Centers the logo horizontally */
-    width: 100%;
-}
-
-footer {
-    padding: 20px;
-    text-align: center;
-    height: 200px;  /* Set a height to see the effect */
-}
-
-.footer-content {
+    padding: 2rem;
     display: flex;
     justify-content: center;
-    align-items: center;  /* Centers the content horizontally and vertically */
     width: 100%;
+    margin-top: 8vh; /* Added to move content down */
 }
 
-.footer-image {
-    position: absolute;
-    bottom: 0;  /* Align the image to the bottom */
-    height: auto;  /* Maintain the aspect ratio of the image */
-}
-
+/* Logo styles */
 .logo {
-    display: flex; /* Maintain alignment for icon and text */
+    display: flex;
     align-items: center;
     gap: 0.2rem;
     color: white;
     text-decoration: none;
-    margin: 0 auto; /* Center the logo horizontally */
+    margin: 0 auto;
 }
 
 .logo-icon {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 1000px; /* Default width for larger devices */
-    height: 100px; /* Default height */
-    background-size: contain; /* Ensure the entire image fits within the block */
-    background-repeat: no-repeat; /* Prevent the image from repeating */
-    background-position: center; /* Center the image horizontally and vertically */
-    background-image: url('../images/logof.png'); /* Replace with your image path */
-    margin: 0 auto; /* Center the block horizontally */
-    overflow: hidden; /* Prevent overflow issues */
+    width: 100%;
+    max-width: 1000px;
+    height: 100px;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-image: url('../images/logof.png');
+    margin: 0 auto;
+    overflow: hidden;
 }
 
-
+/* Main content */
 main {
     max-width: 1200px;
-    margin: 0 auto;
+    margin: 2rem auto 0; /* Added top margin */
     padding: 2rem 1rem;
     text-align: center;
+    height: calc(100vh - 200px);
+    overflow-y: auto;
 }
 
+/* Footer */
+footer {
+    padding: 20px;
+    height: auto;
+    max-height: 200px;
+    position: fixed; /* Changed from absolute to fixed */
+    bottom: 0;
+    left: 0; /* Added left positioning */
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+.footer-content {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    position: relative; /* Added for positioning context */
+}
+
+.footer-image {
+    position: absolute;
+    bottom: 0;
+    left: 50%; /* Center the image */
+    transform: translateX(-50%); /* Ensure perfect centering */
+    height: auto;
+    max-width: 200px; /* Added max-width */
+}
+
+/* Input and button styles */
+.rotating-icon {
+    display: inline-block;
+    animation: spin 1s linear infinite;
+}
 
 .input-group {
     max-width: 600px;
-    margin: 0 auto;
+    margin: 2rem auto; /* Increased margin */
 }
 
 .link-icon {
     background-color: #fbbf24 !important;
     border: none !important;
-	font-size: 2rem; /* Adjust this value to your desired size */
+    font-size: 2rem;
 }
 
 .download-btn {
@@ -97,15 +122,17 @@ main {
     font-weight: bold;
     transition: background-color 0.3s;
     min-width: 300px;
-    position: relative; /* Add positioning context */
-    top: 38px; /* Move the button 20px down */
+    position: relative;
+    top: 38px;
+    padding: 1rem 2rem; /* Added padding */
+    border-radius: 8px; /* Added border radius */
 }
-
 
 .download-btn:hover {
     background-color: #f59e0b;
 }
 
+/* Error and loading states */
 .error-message {
     display: none;
     max-width: 600px;
@@ -119,6 +146,7 @@ main {
     pointer-events: none;
 }
 
+/* Modal styles */
 .confirmation-modal {
     background: white;
     border-radius: 16px;
@@ -177,37 +205,56 @@ main {
     margin-top: 1rem;
 }
 
-
-
-
-/* For large devices (e.g., tablets, smaller laptops) */
+/* Responsive design */
 @media (max-width: 1024px) {
     .logo-icon {
-        width: 800px; /* Reduce width for medium screens */
-        height: 80px; /* Proportional height */
+        width: 100%;
+        max-width: 800px;
+        height: 80px;
+    }
+    
+    nav {
+        margin-top: 6vh; /* Adjusted for smaller screens */
     }
 }
 
-/* For medium devices (e.g., large smartphones, small tablets) */
 @media (max-width: 768px) {
     .logo-icon {
-        width: 600px; /* Reduce width further for smaller tablets */
-        height: 60px; /* Proportional height */
+        max-width: 600px;
+        height: 60px;
+    }
+    
+    nav {
+        margin-top: 4vh;
+    }
+    
+    .footer-image {
+        max-width: 150px;
     }
 }
 
-/* For small smartphones (e.g., iPhone SE, smaller Android devices) */
 @media (max-width: 480px) {
     .logo-icon {
-        width: 400px; /* Reduce width for smaller smartphones */
-        height: 40px; /* Proportional height */
+        max-width: 400px;
+        height: 40px;
+    }
+    
+    nav {
+        margin-top: 3vh;
+    }
+    
+    .footer-image {
+        max-width: 120px;
     }
 }
 
-/* For very small devices (e.g., older iPhones, small screens) */
 @media (max-width: 320px) {
     .logo-icon {
-        width: 300px; /* Minimum width for very small devices */
-        height: 30px; /* Proportional height */
+        max-width: 300px;
+        height: 30px;
+    }
+    
+    .footer-image {
+        max-width: 100px;
     }
 }
