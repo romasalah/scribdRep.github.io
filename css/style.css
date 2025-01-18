@@ -1,0 +1,213 @@
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.rotating-icon {
+    display: inline-block;
+    animation: spin 1s linear infinite;
+}
+
+body {
+    background-image: url('../images/forest.jpg'); /* Replace with the path to your image */
+    background-size: cover; /* Ensures the image covers the entire background */
+    background-repeat: no-repeat; /* Prevents the image from repeating */
+    background-position: center; /* Centers the image */
+    min-height: 100vh; /* Ensures the body covers the full viewport height */
+    margin: 0; /* Removes any default margins */
+}
+
+nav {
+    padding: 7rem;
+    display: flex;
+    justify-content: center; /* Centers the logo horizontally */
+    width: 100%;
+}
+
+footer {
+    padding: 20px;
+    text-align: center;
+    height: 200px;  /* Set a height to see the effect */
+}
+
+.footer-content {
+    display: flex;
+    justify-content: center;
+    align-items: center;  /* Centers the content horizontally and vertically */
+    width: 100%;
+}
+
+.footer-image {
+    position: absolute;
+    bottom: 0;  /* Align the image to the bottom */
+    height: auto;  /* Maintain the aspect ratio of the image */
+}
+
+.logo {
+    display: flex; /* Maintain alignment for icon and text */
+    align-items: center;
+    gap: 0.2rem;
+    color: white;
+    text-decoration: none;
+    margin: 0 auto; /* Center the logo horizontally */
+}
+
+.logo-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 1000px; /* Default width for larger devices */
+    height: 100px; /* Default height */
+    background-size: contain; /* Ensure the entire image fits within the block */
+    background-repeat: no-repeat; /* Prevent the image from repeating */
+    background-position: center; /* Center the image horizontally and vertically */
+    background-image: url('../images/logof.png'); /* Replace with your image path */
+    margin: 0 auto; /* Center the block horizontally */
+    overflow: hidden; /* Prevent overflow issues */
+}
+
+
+main {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+    text-align: center;
+}
+
+
+.input-group {
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.link-icon {
+    background-color: #fbbf24 !important;
+    border: none !important;
+	font-size: 2rem; /* Adjust this value to your desired size */
+}
+
+.download-btn {
+    background-color: #fbbf24;
+    color: black;
+    border: none;
+    font-weight: bold;
+    transition: background-color 0.3s;
+    min-width: 300px;
+    position: relative; /* Add positioning context */
+    top: 38px; /* Move the button 20px down */
+}
+
+
+.download-btn:hover {
+    background-color: #f59e0b;
+}
+
+.error-message {
+    display: none;
+    max-width: 600px;
+    margin: 0.5rem auto;
+    text-align: left;
+    padding: 0.5rem 1rem;
+}
+
+.loading-state {
+    background-color: #c2410c !important;
+    pointer-events: none;
+}
+
+.confirmation-modal {
+    background: white;
+    border-radius: 16px;
+    padding: 2rem;
+    max-width: 500px;
+    margin: 2rem auto;
+    text-align: center;
+}
+
+.modal-backdrop {
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+.confirmation-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    justify-content: center;
+    margin-bottom: 1rem;
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+.download-modal-btn {
+    background-color: #22c55e;
+    color: white;
+    border: none;
+    padding: 0.75rem 2rem;
+    border-radius: 8px;
+    font-weight: 600;
+    margin-top: 1rem;
+}
+
+.download-modal-btn:hover {
+    background-color: #16a34a;
+    color: white;
+}
+
+.close-btn {
+    background-color: #ef4444;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    margin-left: 0.5rem;
+}
+
+.close-btn:hover {
+    background-color: #dc2626;
+    color: white;
+}
+
+.note-text {
+    color: #4b5563;
+    font-size: 0.875rem;
+    margin-top: 1rem;
+}
+
+
+
+
+/* For large devices (e.g., tablets, smaller laptops) */
+@media (max-width: 1024px) {
+    .logo-icon {
+        width: 800px; /* Reduce width for medium screens */
+        height: 80px; /* Proportional height */
+    }
+}
+
+/* For medium devices (e.g., large smartphones, small tablets) */
+@media (max-width: 768px) {
+    .logo-icon {
+        width: 600px; /* Reduce width further for smaller tablets */
+        height: 60px; /* Proportional height */
+    }
+}
+
+/* For small smartphones (e.g., iPhone SE, smaller Android devices) */
+@media (max-width: 480px) {
+    .logo-icon {
+        width: 400px; /* Reduce width for smaller smartphones */
+        height: 40px; /* Proportional height */
+    }
+}
+
+/* For very small devices (e.g., older iPhones, small screens) */
+@media (max-width: 320px) {
+    .logo-icon {
+        width: 300px; /* Minimum width for very small devices */
+        height: 30px; /* Proportional height */
+    }
+}

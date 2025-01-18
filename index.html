@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="icon" type="image/x-icon" href="favicon.ico">
+    <title>TMD Scribd Downloader</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <nav>
+        <div class="logo-icon">
+        </div>
+    </a>
+</nav>
+
+    <main>
+
+        
+        <form id="downloadForm">
+            <div class="input-group mb-2">
+                <span class="input-group-text link-icon">
+                    <i class="bi bi-link-45deg"></i>
+                </span>
+                <input type="text" class="form-control" id="scribdLink" 
+                       placeholder="Paste scribd document link e.g: https://www.scribd.com/document/57167" required>
+            </div>
+
+            <div class="alert alert-danger error-message" role="alert">
+                <i class="bi bi-exclamation-octagon me-2"></i>
+                Pls insert scribd format link!
+            </div>
+
+            <button type="submit" class="btn download-btn btn-lg px-4 mt-5" id="downloadBtn">
+                <i class="bi bi-download me-2"></i>
+                Download
+            </button>
+        </form>
+
+        <!-- Confirmation Modal -->
+        <div class="modal fade" id="confirmationModal" tabindex="-1">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content confirmation-modal">
+                    <div class="confirmation-title">
+                        <i class="bi bi-file-pdf me-2"></i>
+                        <span id="fileName">Class 10 SST Project Guidelines</span>
+                    </div>
+                    <div>File type: <strong>PDF</strong></div>
+                    <button class="download-modal-btn" id="finalDownloadBtn">
+                        <i class="bi bi-download me-2"></i>Download as PDF
+                    </button>
+                    <p class="note-text">
+                        <i class="bi bi-info-circle me-1"></i>
+                        <strong>Note:</strong> Download link will open in <i class="bi bi-box-arrow-up-right mx-1"></i>New Window
+                        Please allow Popup to download.
+                    </p>
+                </div>
+            </div>
+        </div>
+	<footer>
+    <div class="footer-content">
+        <img src="images/grivei.png" alt="Footer Image" class="footer-image">
+        <!-- You can also add more footer content here like text or links -->
+    </div>
+</footer>
+    </main>
+
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <!-- Bootstrap JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Validation Script -->
+    <script>
+        $(document).ready(function () {
+            const scribdRegex = /^https:\/\/www\.scribd\.com\/(?:doc|document|presentation|spreadsheet)\/(\d+)(?:\/(.+))?/;
+            const errorMessage = $('.error-message');
+            const downloadBtn = $('#downloadBtn');
+            const baseDownloadUrl = 'https://ilide.info/docgeneratev2?fileurl=https://scribd.vdownloaders.com/pdownload/';
+            let downloadUrl = '';
+            
+            function constructDownloadUrl(docId, docName) {
+                const safeName = docName ? docName.replace(/[^a-zA-Z0-9-]/g, '-') : docId;
+                return `${baseDownloadUrl}${docId}/${safeName}`;
+            }
+
+            function setLoadingState() {
+                downloadBtn.addClass('loading-state');
+                downloadBtn.html('<i class="bi bi-arrow-repeat rotating-icon me-2"></i>Please Wait..');
+            }
+
+            function resetLoadingState() {
+                downloadBtn.removeClass('loading-state');
+                downloadBtn.html('<i class="bi bi-download me-2"></i>Download');
+            }
+
+            function showConfirmationModal(fileName) {
+                $('#fileName').text(fileName);
+                $('#confirmationModal').modal('show');
+            }
+
+            $('#downloadForm').on('submit', function (event) {
+                event.preventDefault();
+                
+                const inputField = $('#scribdLink');
+                const inputValue = inputField.val().trim();
+
+                if (!inputValue) {
+                    inputField[0].reportValidity();
+                    errorMessage.hide();
+                    return;
+                }
+
+                const match = inputValue.match(scribdRegex);
+                if (!match) {
+                    errorMessage.show();
+                    inputField.addClass('is-invalid');
+                } else {
+                    errorMessage.hide();
+                    inputField.removeClass('is-invalid');
+                    
+                    setLoadingState();
+
+                    // Simulate processing time (remove in production)
+                    setTimeout(() => {
+                        const docId = match[1];
+                        const docName = match[2] || 'document';
+                        downloadUrl = constructDownloadUrl(docId, docName);
+                        
+                        resetLoadingState();
+                        showConfirmationModal(docName.replace(/-/g, ' '));
+                    }, 1500);
+                }
+            });
+
+            $('#finalDownloadBtn').on('click', function() {
+                if (downloadUrl) {
+                    window.open(downloadUrl, '_blank');
+                }
+                $('#confirmationModal').modal('hide');
+            });
+
+            $('#scribdLink').on('input', function() {
+                errorMessage.hide();
+                $(this).removeClass('is-invalid');
+            });
+        });
+    </script>
+</body>
+</html>
