@@ -90,12 +90,11 @@ footer {
 }
 
 .footer-image {
-    position: fixed; /* Changed from absolute to fixed */
+    position: fixed;
     bottom: 0;
     left: 50%;
     transform: translateX(-50%);
     height: auto;
-    max-width: 200px;
 }
 
 /* Input and button styles */
@@ -206,26 +205,100 @@ footer {
 }
 
 /* Responsive design */
-@media screen and (max-width: 1024px) {
+/* 4K+ Displays */
+@media screen and (min-width: 3840px) {
+    .footer-image {
+        max-width: 400px;
+    }
+}
+
+/* Large 4K */
+@media screen and (max-width: 3839px) {
+    .footer-image {
+        max-width: 350px;
+    }
+}
+
+/* Quad HD+ */
+@media screen and (max-width: 3000px) {
+    .footer-image {
+        max-width: 300px;
+    }
+}
+
+/* 2K Displays */
+@media screen and (max-width: 2560px) {
+    .footer-image {
+        max-width: 250px;
+    }
+}
+
+/* Large Laptops & Desktop */
+@media screen and (max-width: 1920px) {
+    .footer-image {
+        max-width: 220px;
+    }
+}
+
+/* Standard Laptop */
+@media screen and (max-width: 1440px) {
+    .footer-image {
+        max-width: 200px;
+    }
+}
+
+/* Small Laptop */
+@media screen and (max-width: 1366px) {
     .footer-image {
         max-width: 180px;
     }
 }
 
-@media screen and (max-width: 768px) {
+/* iPad Pro & Large Tablets */
+@media screen and (max-width: 1024px) {
     .footer-image {
-        max-width: 150px;
+        max-width: 160px;
     }
 }
 
-@media screen and (max-width: 480px) {
+/* iPad & Medium Tablets */
+@media screen and (max-width: 768px) {
+    .footer-image {
+        max-width: 140px;
+    }
+}
+
+/* Large Mobile Devices */
+@media screen and (max-width: 576px) {
     .footer-image {
         max-width: 120px;
     }
 }
 
-@media screen and (max-width: 320px) {
+/* Medium Mobile Devices */
+@media screen and (max-width: 480px) {
+    .footer-image {
+        max-width: 110px;
+    }
+}
+
+/* iPhone Mini & Small Devices */
+@media screen and (max-width: 375px) {
     .footer-image {
         max-width: 100px;
+    }
+}
+
+/* Extra Small Devices */
+@media screen and (max-width: 320px) {
+    .footer-image {
+        max-width: 90px;
+    }
+}
+
+/* Galaxy Fold & Ultra Small Devices */
+@media screen and (max-width: 280px) {
+    .footer-image {
+        max-width: 80px;
     }
 }
