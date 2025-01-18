@@ -90,12 +90,12 @@ footer {
 }
 
 .footer-image {
-    position: absolute;
+    position: fixed; /* Changed from absolute to fixed */
     bottom: 0;
-    left: 50%; /* Center the image */
-    transform: translateX(-50%); /* Ensure perfect centering */
+    left: 50%;
+    transform: translateX(-50%);
     height: auto;
-    max-width: 200px; /* Added max-width */
+    max-width: 200px;
 }
 
 /* Input and button styles */
@@ -206,54 +206,25 @@ footer {
 }
 
 /* Responsive design */
-@media (max-width: 1024px) {
-    .logo-icon {
-        width: 100%;
-        max-width: 800px;
-        height: 80px;
-    }
-    
-    nav {
-        margin-top: 6vh; /* Adjusted for smaller screens */
+@media screen and (max-width: 1024px) {
+    .footer-image {
+        max-width: 180px;
     }
 }
 
-@media (max-width: 768px) {
-    .logo-icon {
-        max-width: 600px;
-        height: 60px;
-    }
-    
-    nav {
-        margin-top: 4vh;
-    }
-    
+@media screen and (max-width: 768px) {
     .footer-image {
         max-width: 150px;
     }
 }
 
-@media (max-width: 480px) {
-    .logo-icon {
-        max-width: 400px;
-        height: 40px;
-    }
-    
-    nav {
-        margin-top: 3vh;
-    }
-    
+@media screen and (max-width: 480px) {
     .footer-image {
         max-width: 120px;
     }
 }
 
-@media (max-width: 320px) {
-    .logo-icon {
-        max-width: 300px;
-        height: 30px;
-    }
-    
+@media screen and (max-width: 320px) {
     .footer-image {
         max-width: 100px;
     }
