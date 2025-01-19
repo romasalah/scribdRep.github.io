@@ -12,8 +12,10 @@ html, body {
     margin: 0;
     padding: 0;
     width: 100%;
-	overflow:hidden;
-
+    height: 100%;
+    overflow: hidden; /* Use overflow hidden instead of fixed position */
+    overscroll-behavior: auto;
+    touch-action: manipulation;
 }
 
 body {
@@ -29,7 +31,7 @@ nav {
     display: flex;
     justify-content: center;
     width: 100%;
-    margin-top: 8vh; /* Added to move content down */
+
 }
 
 /* Logo styles */
@@ -64,6 +66,8 @@ main {
     padding: 2rem 1rem;
     text-align: center;
     height: calc(100vh - 200px);
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
     position: relative;
 }
 
