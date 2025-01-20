@@ -78,78 +78,77 @@
     <!-- Validation Script -->
     <script>
         $(document).ready(function () {
-            const scribdRegex = /^https:\/\/www\.scribd\.com\/(?:doc|document|presentation|spreadsheet)\/(\d+)(?:\/(.+))?/;
-            const errorMessage = $('.error-message');
-            const downloadBtn = $('#downloadBtn');
-            const baseDownloadUrl = 'https://ilide.info/docgeneratev2?fileurl=https://scribd.vdownloaders.com/pdownload/';
-            let downloadUrl = '';
+    // Updated regex to handle country-specific subdomains
+    const scribdRegex = /^https:\/\/(?:[a-z]{2,3}\.)?scribd\.com\/(?:doc|document|presentation|spreadsheet)\/(\d+)(?:\/(.+))?/;
+    const errorMessage = $('.error-message');
+    const downloadBtn = $('#downloadBtn');
+    const baseDownloadUrl = 'https://ilide.info/docgeneratev2?fileurl=https://scribd.vdownloaders.com/pdownload/';
+    let downloadUrl = '';
+    
+    function constructDownloadUrl(docId, docName) {
+        const safeName = docName ? docName.replace(/[^a-zA-Z0-9-]/g, '-') : docId;
+        return `${baseDownloadUrl}${docId}/${safeName}`;
+    }
+
+    function setLoadingState() {
+        downloadBtn.addClass('loading-state');
+        downloadBtn.html('<i class="bi bi-arrow-repeat rotating-icon me-2"></i>Please Wait..');
+    }
+
+    function resetLoadingState() {
+        downloadBtn.removeClass('loading-state');
+        downloadBtn.html('<i class="bi bi-download me-2"></i>Download');
+    }
+
+    function showConfirmationModal(fileName) {
+        $('#fileName').text(fileName);
+        $('#confirmationModal').modal('show');
+    }
+
+    $('#downloadForm').on('submit', function (event) {
+        event.preventDefault();
+        
+        const inputField = $('#scribdLink');
+        const inputValue = inputField.val().trim();
+        if (!inputValue) {
+            inputField[0].reportValidity();
+            errorMessage.hide();
+            return;
+        }
+
+        const match = inputValue.match(scribdRegex);
+        if (!match) {
+            errorMessage.show();
+            inputField.addClass('is-invalid');
+        } else {
+            errorMessage.hide();
+            inputField.removeClass('is-invalid');
             
-            function constructDownloadUrl(docId, docName) {
-                const safeName = docName ? docName.replace(/[^a-zA-Z0-9-]/g, '-') : docId;
-                return `${baseDownloadUrl}${docId}/${safeName}`;
-            }
-
-            function setLoadingState() {
-                downloadBtn.addClass('loading-state');
-                downloadBtn.html('<i class="bi bi-arrow-repeat rotating-icon me-2"></i>Please Wait..');
-            }
-
-            function resetLoadingState() {
-                downloadBtn.removeClass('loading-state');
-                downloadBtn.html('<i class="bi bi-download me-2"></i>Download');
-            }
-
-            function showConfirmationModal(fileName) {
-                $('#fileName').text(fileName);
-                $('#confirmationModal').modal('show');
-            }
-
-            $('#downloadForm').on('submit', function (event) {
-                event.preventDefault();
+            setLoadingState();
+            // Simulate processing time (remove in production)
+            setTimeout(() => {
+                const docId = match[1];
+                const docName = match[2] || 'document';
+                downloadUrl = constructDownloadUrl(docId, docName);
                 
-                const inputField = $('#scribdLink');
-                const inputValue = inputField.val().trim();
+                resetLoadingState();
+                showConfirmationModal(docName.replace(/-/g, ' '));
+            }, 1500);
+        }
+    });
 
-                if (!inputValue) {
-                    inputField[0].reportValidity();
-                    errorMessage.hide();
-                    return;
-                }
+    $('#finalDownloadBtn').on('click', function() {
+        if (downloadUrl) {
+            window.open(downloadUrl, '_blank');
+        }
+        $('#confirmationModal').modal('hide');
+    });
 
-                const match = inputValue.match(scribdRegex);
-                if (!match) {
-                    errorMessage.show();
-                    inputField.addClass('is-invalid');
-                } else {
-                    errorMessage.hide();
-                    inputField.removeClass('is-invalid');
-                    
-                    setLoadingState();
-
-                    // Simulate processing time (remove in production)
-                    setTimeout(() => {
-                        const docId = match[1];
-                        const docName = match[2] || 'document';
-                        downloadUrl = constructDownloadUrl(docId, docName);
-                        
-                        resetLoadingState();
-                        showConfirmationModal(docName.replace(/-/g, ' '));
-                    }, 1500);
-                }
-            });
-
-            $('#finalDownloadBtn').on('click', function() {
-                if (downloadUrl) {
-                    window.open(downloadUrl, '_blank');
-                }
-                $('#confirmationModal').modal('hide');
-            });
-
-            $('#scribdLink').on('input', function() {
-                errorMessage.hide();
-                $(this).removeClass('is-invalid');
-            });
-        });
+    $('#scribdLink').on('input', function() {
+        errorMessage.hide();
+        $(this).removeClass('is-invalid');
+    });
+});
     </script>
 </body>
 </html>
