@@ -358,6 +358,23 @@ input:checked + .slider-2:before {
 }
 
 
+@media (max-width: 425px) {
+    .footer-image {
+        max-height: 265px;
+    }
+    
+    main {
+        padding: 1rem; /* Shorthand for 1rem 1rem */
+        margin-top: -1rem; 
+    }
+    
+    .logo-icon {
+		padding: 1rem;
+        margin-top: 1vh;
+    }
+} 
+
+
 @media (max-width: 400px) {
     .footer-image {
         max-height: 290px;
