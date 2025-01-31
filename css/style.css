@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css?family=Varela+Round');
+
 @keyframes spin {
     from {
         transform: rotate(0deg);
@@ -7,15 +9,18 @@
     }
 }
 
-/* Base styles */
+.rotating-icon {
+    animation: spin 1s linear infinite;
+    display: inline-block;
+}
+
 html, body {
     margin: 0;
     padding: 0;
     width: 100%;
     height: 100%;
-    overflow: hidden; /* Disable scrolling */
-    touch-action: pan-x; /* Allow horizontal gestures, block vertical scroll */
-	
+    overflow: hidden;
+    touch-action: pan-x;
 }
 
 body {
@@ -25,17 +30,14 @@ body {
     background-position: center;
 }
 
-/* Navigation */
 nav {
-    padding: 2rem;
+    padding: 1rem;
     display: flex;
     justify-content: center;
     width: 100%;
     margin-top: 8vh;
-
 }
 
-/* Logo styles */
 .logo {
     display: flex;
     align-items: center;
@@ -60,10 +62,9 @@ nav {
     overflow: hidden;
 }
 
-/* Main content */
 main {
     max-width: 1200px;
-    margin: 2rem auto 0; /* Added top margin */
+    margin: 2rem auto 0;
     padding: 2rem 1rem;
     text-align: center;
     height: calc(100vh - 200px);
@@ -71,14 +72,13 @@ main {
     position: relative;
 }
 
-/* Footer */
 footer {
     padding: 20px;
     height: auto;
     max-height: 200px;
-    position: fixed; /* Changed from absolute to fixed */
+    position: fixed;
     bottom: 0;
-    left: 0; /* Added left positioning */
+    left: 0;
     width: 100%;
     display: flex;
     justify-content: center;
@@ -89,7 +89,7 @@ footer {
     justify-content: center;
     align-items: center;
     width: 100%;
-    position: relative; /* Added for positioning context */
+    position: relative;
 }
 
 .footer-image {
@@ -100,15 +100,9 @@ footer {
     height: auto;
 }
 
-/* Input and button styles */
-.rotating-icon {
-    display: inline-block;
-    animation: spin 1s linear infinite;
-}
-
 .input-group {
     max-width: 600px;
-    margin: 2rem auto; /* Increased margin */
+    margin: 2rem auto;
 }
 
 .link-icon {
@@ -125,16 +119,15 @@ footer {
     transition: background-color 0.3s;
     min-width: 300px;
     position: relative;
-    top: 38px;
-    padding: 1rem 2rem; /* Added padding */
-    border-radius: 8px; /* Added border radius */
+    top: 9px;
+    padding: 1rem 1rem;
+    border-radius: 8px;
 }
 
 .download-btn:hover {
     background-color: #f59e0b;
 }
 
-/* Error and loading states */
 .error-message {
     display: none;
     max-width: 600px;
@@ -148,7 +141,6 @@ footer {
     pointer-events: none;
 }
 
-/* Modal styles */
 .confirmation-modal {
     background: white;
     border-radius: 16px;
@@ -187,121 +179,237 @@ footer {
     color: white;
 }
 
-.close-btn {
-    background-color: #ef4444;
-    color: white;
-    border: none;
-    padding: 0.5rem 1rem;
-    border-radius: 4px;
-    margin-left: 0.5rem;
+/* Updated Slider Containers */
+.switch-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    justify-content: center;
+    margin: 30px auto;
+    width: fit-content;
 }
 
-.close-btn:hover {
-    background-color: #dc2626;
-    color: white;
+.switch-container-2 {
+    align-items: center;
+    gap: 8px;
+    justify-content: center;
+    margin: 30px auto;
+    width: fit-content;
+    display: flex;
 }
 
-.note-text {
-    color: #4b5563;
-    font-size: 0.875rem;
-    margin-top: 1rem;
+/* Switches */
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 50px;
+    height: 25px;
 }
 
-/* Responsive design */
-/* 4K+ Displays */
-@media screen and (min-width: 3840px) {
+.switch-2 {
+    position: relative;
+    display: inline-block;
+    width: 50px;
+    height: 25px;
+    left: 0.3rem;
+}
+
+.switch input, .switch-2 input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+/* Sliders */
+.slider, .slider-2 {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: #ffffff;
+    transition: .4s;
+    border-radius: 25px;
+    border: 1px solid #ccc;
+}
+
+
+
+.slider:before, .slider-2:before {
+    position: absolute;
+    content: "";
+    height: 19px;
+    width: 19px;
+    border-radius: 50%;
+    left: 2px;
+    top: 50%;
+    transform: translateY(-50%);
+    background-color: white;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    transition: 0.4s;
+}
+
+input:checked + .slider, input:checked + .slider-2 {
+    background-color: #5fdd54;
+}
+
+input:checked + .slider:before {
+    transform: translateX(25px) translateY(-50%);
+}
+
+input:checked + .slider-2:before {
+    transform: translateX(25px) translateY(-50%);
+}
+
+/* Slider Labels */
+.slider-label {
+    font-size: 16px;
+    font-weight: 700;
+    font-family: 'Varela Round', sans-serif;
+    color: #ffffff;
+    text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.8);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+.slider-2-label {
+    font-size: 16px;
+    font-weight: 700;
+    font-family: 'Varela Round', sans-serif;
+    color: #ffffff;
+    text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.8);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    left: 5.5px;
+    position: relative;
+}
+
+/* Active Label States */
+#sliderToggle:not(:checked) ~ .sd-label,
+#sliderToggleFormat:not(:checked) ~ .pdf-label {
+    color: #4AE54A;
+}
+
+#sliderToggle:checked ~ .hd-label,
+#sliderToggleFormat:checked ~ .pptx-label {
+    color: #4AE54A;
+}
+
+
+/* Media Queries */
+@media (max-width: 1600px) {
     .footer-image {
-        max-width: 400px;
+        max-width: 800px;
     }
 }
 
-/* Large 4K */
-@media screen and (max-width: 3839px) {
+@media (max-width: 1200px) {
     .footer-image {
-        max-width: 350px;
+        max-width: 85%;
     }
 }
 
-/* Quad HD+ */
-@media screen and (max-width: 3000px) {
+@media (max-width: 992px) {
     .footer-image {
-        max-width: 300px;
+        max-width: 90%;
+        padding: 8px 0;
     }
 }
 
-/* 2K Displays */
-@media screen and (max-width: 2560px) {
+@media (max-width: 768px) {
     .footer-image {
-        max-width: 250px;
+        max-width: 95%;
+        padding: 6px 0;
+    }
+    
+}
+
+@media (max-width: 576px) {
+    .footer-image {
+        max-width: 100%;
+        padding: 4px 0;
+        max-height: 160px;
     }
 }
 
-/* Large Laptops & Desktop */
-@media screen and (max-width: 1920px) {
+@media (max-width: 540px) {
     .footer-image {
-        max-width: 220px;
+        max-height: 195px;
+    }
+    
+    main {
+        padding: 1rem; /* Shorthand for 1rem 1rem */
+        margin-top: -1rem; 
+    }
+    
+    .logo-icon {
+		padding: 1rem;
+        margin-top: 1vh;
+    }
+} 
+
+
+@media (max-width: 480px) {
+    .footer-image {
+        max-height: 280px;
+        padding: 2px 0;
     }
 }
 
-/* Standard Laptop */
-@media screen and (max-width: 1440px) {
+
+@media (max-width: 400px) {
     .footer-image {
-        max-width: 200px;
+        max-height: 290px;
+    }
+    
+    main {
+        padding: 1rem; /* Shorthand for 1rem 1rem */
+        margin-top: -1rem; 
+    }
+    
+    .logo-icon {
+		padding: 1rem;
+        margin-top: 1vh;
+    }
+} 
+
+
+@media (max-width: 375px) {
+    .footer-image {
+        max-height: 200px;
+    }
+    
+    main {
+        padding: 1rem 1rem; /* Reduced padding for small screens */
+        margin-top: -1rem; /* Optional: Adjust margin if needed */
+    }
+	
+	.logo-icon {
+		height: 4px;
+        
     }
 }
 
-/* Small Laptop */
-@media screen and (max-width: 1366px) {
+@media (max-width: 360px) {
     .footer-image {
-        max-width: 180px;
+        max-height: 210px;
     }
-}
-
-/* iPad Pro & Large Tablets */
-@media screen and (max-width: 1024px) {
-    .footer-image {
-        max-width: 160px;
+    
+    main {
+        padding: 1rem; /* Shorthand for 1rem 1rem */
+        margin-top: -1rem; 
     }
-}
-
-/* iPad & Medium Tablets */
-@media screen and (max-width: 768px) {
-    .footer-image {
-        max-width: 140px;
+    
+    .logo-icon {
+		padding: 1rem;
+        margin-top: 1vh;
     }
-}
+} 
 
-/* Large Mobile Devices */
-@media screen and (max-width: 576px) {
+@media (orientation: landscape) and (max-height: 500px) {
     .footer-image {
-        max-width: 120px;
-    }
-}
-
-/* Medium Mobile Devices */
-@media screen and (max-width: 480px) {
-    .footer-image {
-        max-width: 110px;
-    }
-}
-
-/* iPhone Mini & Small Devices */
-@media screen and (max-width: 375px) {
-    .footer-image {
-        max-width: 100px;
-    }
-}
-
-/* Extra Small Devices */
-@media screen and (max-width: 320px) {
-    .footer-image {
-        max-width: 90px;
-    }
-}
-
-/* Galaxy Fold & Ultra Small Devices */
-@media screen and (max-width: 280px) {
-    .footer-image {
-        max-width: 80px;
+        max-height: 100px;
+        padding-bottom: 0;
     }
 }

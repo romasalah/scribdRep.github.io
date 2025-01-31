@@ -1,0 +1,307 @@
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Base styles */
+html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+	overflow: hidden; /* Disable scrolling */
+	touch-action: pan-x; /* Allow horizontal gestures, block vertical scroll */
+	
+}
+
+body {
+    background-image: url('../images/forest.jpg');
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+/* Navigation */
+nav {
+    padding: 2rem;
+    display: flex;
+    justify-content: center;
+    width: 100%;
+	margin-top: 8vh;
+
+}
+
+/* Logo styles */
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 0.2rem;
+    color: white;
+    text-decoration: none;
+    margin: 0 auto;
+}
+
+.logo-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    max-width: 1000px;
+    height: 100px;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-image: url('../images/logof.png');
+    margin: 0 auto;
+    overflow: hidden;
+}
+
+/* Main content */
+main {
+    max-width: 1200px;
+    margin: 2rem auto 0; /* Added top margin */
+    padding: 2rem 1rem;
+    text-align: center;
+    height: calc(100vh - 200px);
+    overflow-y: hidden;
+    position: relative;
+}
+
+/* Footer */
+footer {
+    padding: 20px;
+    height: auto;
+    max-height: 200px;
+    position: fixed; /* Changed from absolute to fixed */
+    bottom: 0;
+    left: 0; /* Added left positioning */
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+.footer-content {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    position: relative; /* Added for positioning context */
+}
+
+.footer-image {
+    position: fixed;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    height: auto;
+}
+
+/* Input and button styles */
+.rotating-icon {
+    display: inline-block;
+    animation: spin 1s linear infinite;
+}
+
+.input-group {
+    max-width: 600px;
+    margin: 2rem auto; /* Increased margin */
+}
+
+.link-icon {
+    background-color: #fbbf24 !important;
+    border: none !important;
+    font-size: 2rem;
+}
+
+.download-btn {
+    background-color: #fbbf24;
+    color: black;
+    border: none;
+    font-weight: bold;
+    transition: background-color 0.3s;
+    min-width: 300px;
+    position: relative;
+    top: 38px;
+    padding: 1rem 2rem; /* Added padding */
+    border-radius: 8px; /* Added border radius */
+}
+
+.download-btn:hover {
+    background-color: #f59e0b;
+}
+
+/* Error and loading states */
+.error-message {
+    display: none;
+    max-width: 600px;
+    margin: 0.5rem auto;
+    text-align: left;
+    padding: 0.5rem 1rem;
+}
+
+.loading-state {
+    background-color: #c2410c !important;
+    pointer-events: none;
+}
+
+/* Modal styles */
+.confirmation-modal {
+    background: white;
+    border-radius: 16px;
+    padding: 2rem;
+    max-width: 500px;
+    margin: 2rem auto;
+    text-align: center;
+}
+
+.modal-backdrop {
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+.confirmation-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    justify-content: center;
+    margin-bottom: 1rem;
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+.download-modal-btn {
+    background-color: #22c55e;
+    color: white;
+    border: none;
+    padding: 0.75rem 2rem;
+    border-radius: 8px;
+    font-weight: 600;
+    margin-top: 1rem;
+}
+
+.download-modal-btn:hover {
+    background-color: #16a34a;
+    color: white;
+}
+
+.close-btn {
+    background-color: #ef4444;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    margin-left: 0.5rem;
+}
+
+.close-btn:hover {
+    background-color: #dc2626;
+    color: white;
+}
+
+.note-text {
+    color: #4b5563;
+    font-size: 0.875rem;
+    margin-top: 1rem;
+}
+
+/* Responsive design */
+/* 4K+ Displays */
+@media screen and (min-width: 3840px) {
+    .footer-image {
+        max-width: 400px;
+    }
+}
+
+/* Large 4K */
+@media screen and (max-width: 3839px) {
+    .footer-image {
+        max-width: 350px;
+    }
+}
+
+/* Quad HD+ */
+@media screen and (max-width: 3000px) {
+    .footer-image {
+        max-width: 300px;
+    }
+}
+
+/* 2K Displays */
+@media screen and (max-width: 2560px) {
+    .footer-image {
+        max-width: 250px;
+    }
+}
+
+/* Large Laptops & Desktop */
+@media screen and (max-width: 1920px) {
+    .footer-image {
+        max-width: 220px;
+    }
+}
+
+/* Standard Laptop */
+@media screen and (max-width: 1440px) {
+    .footer-image {
+        max-width: 200px;
+    }
+}
+
+/* Small Laptop */
+@media screen and (max-width: 1366px) {
+    .footer-image {
+        max-width: 180px;
+    }
+}
+
+/* iPad Pro & Large Tablets */
+@media screen and (max-width: 1024px) {
+    .footer-image {
+        max-width: 160px;
+    }
+}
+
+/* iPad & Medium Tablets */
+@media screen and (max-width: 768px) {
+    .footer-image {
+        max-width: 140px;
+    }
+}
+
+/* Large Mobile Devices */
+@media screen and (max-width: 576px) {
+    .footer-image {
+        max-width: 120px;
+    }
+}
+
+/* Medium Mobile Devices */
+@media screen and (max-width: 480px) {
+    .footer-image {
+        max-width: 110px;
+    }
+}
+
+/* iPhone Mini & Small Devices */
+@media screen and (max-width: 375px) {
+    .footer-image {
+        max-width: 100px;
+    }
+}
+
+/* Extra Small Devices */
+@media screen and (max-width: 320px) {
+    .footer-image {
+        max-width: 90px;
+    }
+}
+
+/* Galaxy Fold & Ultra Small Devices */
+@media screen and (max-width: 280px) {
+    .footer-image {
+        max-width: 80px;
+    }
+}
