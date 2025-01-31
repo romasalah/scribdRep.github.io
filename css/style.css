@@ -358,7 +358,7 @@ input:checked + .slider-2:before {
 }
 
 
-@media (max-width: 425px) {
+@media (max-width: 424px) {
     .footer-image {
         max-height: 250px;
     }
