@@ -360,7 +360,7 @@ input:checked + .slider-2:before {
 
 @media (max-width: 425px) {
     .footer-image {
-        max-height: 260px;
+        max-height: 250px;
     }
     
     main {
