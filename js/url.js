@@ -4,7 +4,7 @@ const URLS = {
     scribdDownload: 'https://ilide.info/docgeneratev2?fileurl=https://scribd.vdownloaders.com/pdownload/',
 
     // CORS proxy for bypassing CORS restrictions
-    corsProxy: 'scribd.deno.dev/proxy/',
+    corsProxy: 'https://scribd.deno.dev/proxy/',
 
     // Proxy endpoint for fetching Scribd documents
     proxyEndpoint: 'https://awayne-cors.glitch.me/',
