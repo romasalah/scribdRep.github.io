@@ -3,7 +3,7 @@ $(document).ready(function () {
     // Constants and Global Variables
     // ==========================================
     const validDomains = {
-        scribd: /^https:\/\/(?:[a-z]{2,3}\.)?scribd\.com\/document\/(\d+)\/([^\/]+)$/,
+        scribd: /^https:\/\/(?:[a-z]{2,3}\.)?scribd\.com\/(?:document|doc)\/(\d+)\/([^\/]+)$/,
         slideshare: /^(?:https?:\/\/)?(?:www\.)?slideshare\.net\/([^\/]+)\/([^\/]+)/
     };
 
@@ -35,13 +35,24 @@ $(document).ready(function () {
     // Utility Functions
     // ==========================================
     function sanitizeFileName(fileName) {
-        const decodedName = decodeURIComponent(fileName);
-        return decodedName
-            .replace(/[<>:"/\\|?*]/g, '_')
-            .replace(/\s+/g, '_')
-            .replace(/_{2,}/g, '_')
-            .replace(/^_+|_+$/g, '')
-            .trim();
+        try {
+            // First properly decode the URI component to handle UTF-8 characters
+            const decodedName = decodeURIComponent(fileName);
+            return decodedName
+                .replace(/[<>:"/\\|?*]/g, '_')  // Replace invalid filename chars
+                .replace(/\s+/g, '_')           // Replace spaces with underscores
+                .replace(/_{2,}/g, '_')         // Remove multiple consecutive underscores
+                .replace(/^_+|_+$/g, '')        // Trim leading/trailing underscores
+                .trim();
+        } catch (e) {
+            // If decoding fails, try a different approach for non-Latin characters
+            return fileName
+                .replace(/[<>:"/\\|?*]/g, '_')
+                .replace(/\s+/g, '_')
+                .replace(/_{2,}/g, '_')
+                .replace(/^_+|_+$/g, '')
+                .trim();
+        }
     }
 
     function parseSlideShareUrl(url) {
@@ -56,7 +67,7 @@ $(document).ready(function () {
             documentName: cleanDocName,
             cleanName: cleanDocName
                 .replace(/-/g, ' ')
-                .replace(/[^a-zA-Z0-9 ]/g, '')
+                .replace(/[^a-zA-Z0-9\u0400-\u04FF\s]/g, '') // Allow Cyrillic chars range
                 .trim()
         };
     }
@@ -153,42 +164,56 @@ $(document).ready(function () {
     }
 
     async function handleScribdDownload() {
-    try {
-        const response = await fetch(state.downloadUrl);
-        if (!response.ok) throw new Error(`Failed to fetch document: ${response.status}`);
-        
-        // Get response as text since it's HTML, not JSON
-        const htmlText = await response.text();
-        
-        // Extract the iframe src attribute with a specific pattern matching this site's format
-        const iframeMatch = htmlText.match(/<iframe src="([^"]+)"/i);
-        
-        if (!iframeMatch) {
-            throw new Error('Document iframe not found in HTML response');
+        try {
+            const response = await fetch(state.downloadUrl);
+            if (!response.ok) throw new Error(`Failed to fetch document: ${response.status}`);
+            
+            // Get response as text since it's HTML, not JSON
+            const htmlText = await response.text();
+            
+            // Extract the iframe src attribute with a specific pattern matching this site's format
+            const iframeMatch = htmlText.match(/<iframe src="([^"]+)"/i);
+            
+            if (!iframeMatch) {
+                throw new Error('Document iframe not found in HTML response');
+            }
+            
+            // Extract the file URL from the iframe src
+            const iframeSrc = iframeMatch[1];
+            const fileUrlParam = iframeSrc.split('?file=')[1];
+            
+            if (!fileUrlParam) {
+                throw new Error('File URL parameter not found in iframe src');
+            }
+            
+            // Get the actual file URL (remove zoom and handle URL encoding)
+            const fileUrl = decodeURIComponent(fileUrlParam.split('#')[0]);
+            
+            const scribdUrl = elements.scribdLink.val().trim();
+            const match = scribdUrl.match(validDomains.scribd);
+            
+            if (!match || match.length < 3) {
+                throw new Error('Invalid Scribd URL format');
+            }
+            
+            const [, docId, docName] = match;
+            
+            // Properly handle the docName for international characters
+            try {
+                const decodedDocName = decodeURIComponent(docName);
+                const fileName = `${sanitizeFileName(decodedDocName)}.pdf`;
+                await downloadFile(`${URLS.proxyEndpoint}${fileUrl}`, fileName);
+            } catch (e) {
+                // Fallback if decoding fails
+                const fileName = `${sanitizeFileName(docName)}.pdf`;
+                await downloadFile(`${URLS.proxyEndpoint}${fileUrl}`, fileName);
+            }
+            
+        } catch (error) {
+            console.error('Detailed error:', error);
+            throw error;
         }
-        
-        // Extract the file URL from the iframe src
-        const iframeSrc = iframeMatch[1];
-        const fileUrlParam = iframeSrc.split('?file=')[1];
-        
-        if (!fileUrlParam) {
-            throw new Error('File URL parameter not found in iframe src');
-        }
-        
-        // Get the actual file URL (remove zoom and handle URL encoding)
-        const fileUrl = decodeURIComponent(fileUrlParam.split('#')[0]);
-        
-        const scribdUrl = elements.scribdLink.val().trim();
-        const [, , docName] = scribdUrl.match(validDomains.scribd);
-        
-        const fileName = `${sanitizeFileName(docName)}.pdf`;
-        await downloadFile(`${URLS.proxyEndpoint}${fileUrl}`, fileName);
-		
-    } catch (error) {
-        console.error('Detailed error:', error);
-        throw error;
     }
-}
 
     async function handleSlideShareDownload() {
         if (!state.slideshareDocInfo) throw new Error('No SlideShare document info');
@@ -234,18 +259,45 @@ $(document).ready(function () {
 
         try {
             if (isScribd) {
-                const [, docId, docName] = input.match(validDomains.scribd);
-                const safeName = docName.replace(/[^a-zA-Z0-9-]/g, '-');
+                const match = input.match(validDomains.scribd);
+                if (!match || match.length < 3) {
+                    throw new Error('Invalid Scribd URL format');
+                }
+                
+                const [, docId, docName] = match;
+                
+                // Use a more flexible approach for encoding the URL
+                let safeName;
+                try {
+                    // Try to decode first in case it's already URL-encoded
+                    const decodedName = decodeURIComponent(docName);
+                    // Then re-encode properly
+                    safeName = encodeURIComponent(decodedName);
+                } catch (e) {
+                    // If decoding fails, use as is but ensure it's encoded
+                    safeName = encodeURIComponent(docName);
+                }
+                
                 state.downloadUrl = `${URLS.corsProxy}${encodeURIComponent(`${URLS.scribdDownload}${docId}/${safeName}`)}`;
-                showConfirmationModal(docName.replace(/-/g, ' '), 'PDF');
+                
+                // Show a properly decoded name in the confirmation modal
+                let displayName;
+                try {
+                    displayName = decodeURIComponent(docName).replace(/-/g, ' ');
+                } catch (e) {
+                    displayName = docName.replace(/-/g, ' ');
+                }
+                
+                showConfirmationModal(displayName, 'PDF');
             } else {
                 state.downloadUrl = await processSlideShare(input);
                 showConfirmationModal(
-                    state.slideshareDocInfo.documentName,
+                    state.slideshareDocInfo.documentName.replace(/-/g, ' '),
                     elements.sliderToggleFormat.prop('checked') ? 'PPTX' : 'PDF'
                 );
             }
         } catch (error) {
+            console.error('Processing error:', error);
             showError('Processing failed. Please try again!');
         } finally {
             resetLoadingState();
