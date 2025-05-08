@@ -3,7 +3,7 @@ $(document).ready(function () {
     // Constants and Global Variables
     // ==========================================
     const validDomains = {
-        scribd: /^https:\/\/(?:[a-z]{2,3}\.)?scribd\.com\/(?:document|doc)\/(\d+)\/([^\/]+)$/,
+        scribd: /^https:\/\/(?:[a-z]{2,3}\.)?scribd\.com\/(?:document|doc|presentation)\/(\d+)\/([^\/]+)$/,
         slideshare: /^(?:https?:\/\/)?(?:www\.)?slideshare\.net\/([^\/]+)\/([^\/]+)/
     };
 
