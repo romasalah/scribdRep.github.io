@@ -1,7 +1,7 @@
 // URL Configuration for Scribd and SlideShare APIs
 const URLS = {
     // Scribd download endpoint
-    scribdDownload: 'https://compress-pdf.vietdreamhouse.com/?fileurl=https://scribd.downloader.tips/pdownload/',
+    scribdDownload: 'https://ilide.info/docgeneratev2?fileurl=https://scribd.vdownloaders.com/pdownload/',
 
     // CORS proxy for bypassing CORS restrictions
     corsProxy: 'https://render-proxy.deno.dev/proxy/',
