@@ -155,6 +155,38 @@ $(document).ready(function () {
         URL.revokeObjectURL(blobUrl);
     }
 
+    async function downloadFileWithOriginalName(url) {
+        const response = await fetch(url);
+        if (!response.ok) throw new Error('Failed to download file');
+        
+        // Extract original filename from Content-Disposition header
+        let fileName = 'document.pdf'; // fallback name
+        const contentDisposition = response.headers.get('Content-Disposition');
+        if (contentDisposition) {
+            const fileNameMatch = contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
+            if (fileNameMatch && fileNameMatch[1]) {
+                fileName = fileNameMatch[1].replace(/['"]/g, '');
+                // Decode if it's URL encoded
+                try {
+                    fileName = decodeURIComponent(fileName);
+                } catch (e) {
+                    // Keep original if decode fails
+                }
+            }
+        }
+        
+        const blob = await response.blob();
+        const blobUrl = URL.createObjectURL(blob);
+        
+        const link = document.createElement('a');
+        link.href = blobUrl;
+        link.download = fileName;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(blobUrl);
+    }
+
     async function processSlideShare(url) {
         const hdEnabled = elements.sliderToggle.prop('checked');
         const encodedUrl = encodeURIComponent(url);
@@ -242,21 +274,8 @@ $(document).ready(function () {
             // Step 3: Poll the server for job completion
             await pollScribdStatus(jobType, jobId);
             
-            // Step 4: Download the final file
-            const scribdUrl = elements.scribdLink.val().trim();
-            const match = scribdUrl.match(validDomains.scribd);
-            
-            if (!match || match.length < 3) {
-                throw new Error('Invalid Scribd URL format');
-            }
-            
-            const [, docId, docName] = match;
-            
-            // Use original filename for Scribd downloads - minimal sanitization
-            const originalFileName = `${getOriginalScribdFileName(docName)}.pdf`;
-            
-            // Download from the final endpoint
-            await downloadFile(`${URLS.corsProxy}${URLS.scribdFinal}`, originalFileName);
+            // Step 4: Download the final file with original filename from server
+            await downloadFileWithOriginalName(`${URLS.corsProxy}${URLS.scribdFinal}`);
             
         } catch (error) {
             console.error('Detailed error:', error);
