@@ -3,6 +3,10 @@ const URLS = {
     // Scribd download endpoint
     scribdDownload: 'https://compress-pdf.vietdreamhouse.com/?fileurl=https://scribd.downloader.tips/pdownload/',
 
+    // New Scribd endpoints
+    scribdCheck: 'https://compress-pdf.vietdreamhouse.com/check-status',
+    scribdFinal: 'https://compress-pdf.vietdreamhouse.com/download/compresspdf',
+
     // CORS proxy for bypassing CORS restrictions
     corsProxy: 'https://render-proxy.deno.dev/proxy/',
 
