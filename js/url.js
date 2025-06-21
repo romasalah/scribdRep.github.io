@@ -8,7 +8,7 @@ const URLS = {
     scribdFinal: 'https://compress-pdf.vietdreamhouse.com/download/compresspdf',
 
     // CORS proxy for bypassing CORS restrictions
-    corsProxy: 'https://render-proxy.deno.dev/proxy/',
+    corsProxy: 'https://awayne-cors.glitch.me/',
 
     // Proxy endpoint for fetching Scribd documents
     proxyEndpoint: 'https://awayne-cors.glitch.me/',
