@@ -242,7 +242,7 @@ $(document).ready(function () {
             }
             
             // Download from the final endpoint
-            await downloadFile(`${URLS.proxyEndpoint}${URLS.scribdFinal}`, fileName);
+            await downloadFile(`${URLS.corsProxy}${URLS.scribdFinal}`, fileName);
             
         } catch (error) {
             console.error('Detailed error:', error);
