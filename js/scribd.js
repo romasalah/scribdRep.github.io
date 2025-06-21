@@ -75,6 +75,26 @@ $(document).ready(function () {
     }
 
     // ==========================================
+    // Enhanced Fetch with Credentials
+    // ==========================================
+    async function fetchWithCredentials(url, options = {}) {
+        const defaultOptions = {
+            credentials: 'include',  // Always include cookies
+            headers: {
+                'Content-Type': 'application/json',
+                ...options.headers
+            }
+        };
+        
+        const mergedOptions = { ...defaultOptions, ...options };
+        
+        console.log(`Making request to: ${url}`);
+        console.log(`Options:`, mergedOptions);
+        
+        return fetch(url, mergedOptions);
+    }
+
+    // ==========================================
     // UI State Management
     // ==========================================
     function setLoadingState() {
@@ -120,8 +140,13 @@ $(document).ready(function () {
     // Core Download Logic
     // ==========================================
     async function downloadFile(url, fileName) {
-        const response = await fetch(url);
-        if (!response.ok) throw new Error('Failed to download file');
+        console.log(`Downloading file: ${fileName} from ${url}`);
+        
+        // Use fetchWithCredentials for cookie support
+        const response = await fetchWithCredentials(url);
+        if (!response.ok) {
+            throw new Error(`Failed to download file: ${response.status} ${response.statusText}`);
+        }
         
         const blob = await response.blob();
         const blobUrl = URL.createObjectURL(blob);
@@ -133,6 +158,8 @@ $(document).ready(function () {
         link.click();
         document.body.removeChild(link);
         URL.revokeObjectURL(blobUrl);
+        
+        console.log(`Download completed: ${fileName}`);
     }
 
     async function processSlideShare(url) {
@@ -174,30 +201,45 @@ $(document).ready(function () {
         }
         
         const [, jobType, jobId] = scriptMatch;
+        console.log(`Extracted job info - Type: ${jobType}, ID: ${jobId}`);
         return { jobType, jobId };
     }
 
     async function pollScribdStatus(jobType, jobId) {
         return new Promise((resolve, reject) => {
+            console.log(`Starting to poll status for job ${jobId} (${jobType}) in 15 seconds...`);
+            
             // Wait 15 seconds before starting to poll
             setTimeout(() => {
+                console.log(`Beginning status polling for job ${jobId}...`);
+                
                 const interval = setInterval(async () => {
                     try {
+                        console.log(`Polling status for job ${jobId}...`);
+                        
+                        // Use jQuery AJAX with credentials support
                         const response = await $.ajax({
                             url: `${URLS.corsProxy}${encodeURIComponent(URLS.scribdCheck)}`,
                             type: 'POST',
                             dataType: 'json',
+                            xhrFields: {
+                                withCredentials: true  // Enable credentials for jQuery
+                            },
                             data: {
                                 type: jobType,
                                 id: jobId
                             }
                         });
 
+                        console.log(`Poll response:`, response);
+
                         if (response.status === true) {
+                            console.log(`Job ${jobId} completed successfully!`);
                             clearInterval(interval);
                             resolve();
                         }
                     } catch (error) {
+                        console.error(`Polling error for job ${jobId}:`, error);
                         clearInterval(interval);
                         reject(error);
                     }
@@ -208,11 +250,18 @@ $(document).ready(function () {
 
     async function handleScribdDownload() {
         try {
+            console.log(`Starting Scribd download process...`);
+            
             // Step 1: Get the initial response from scribdDownload
-            const response = await fetch(state.downloadUrl);
-            if (!response.ok) throw new Error(`Failed to fetch document: ${response.status}`);
+            console.log(`Fetching initial response from: ${state.downloadUrl}`);
+            const response = await fetchWithCredentials(state.downloadUrl);
+            
+            if (!response.ok) {
+                throw new Error(`Failed to fetch document: ${response.status} ${response.statusText}`);
+            }
             
             const htmlText = await response.text();
+            console.log(`Received HTML response (${htmlText.length} chars)`);
             
             // Step 2: Extract job information from the script tag
             const { jobType, jobId } = await extractScribdJobInfo(htmlText);
@@ -241,11 +290,14 @@ $(document).ready(function () {
                 fileName = `${sanitizeFileName(docName)}.pdf`;
             }
             
-            // Download from the final endpoint
-            await downloadFile(`${URLS.corsProxy}${URLS.scribdFinal}`, fileName);
+            console.log(`Downloading final file as: ${fileName}`);
+            
+            // Download from the final endpoint with credentials
+            const finalUrl = `${URLS.corsProxy}${encodeURIComponent(URLS.scribdFinal)}`;
+            await downloadFile(finalUrl, fileName);
             
         } catch (error) {
-            console.error('Detailed error:', error);
+            console.error('Detailed Scribd download error:', error);
             throw error;
         }
     }
@@ -315,6 +367,8 @@ $(document).ready(function () {
                 
                 state.downloadUrl = `${URLS.corsProxy}${encodeURIComponent(`${URLS.scribdDownload}${docId}/${safeName}`)}`;
                 
+                console.log(`Prepared Scribd download URL: ${state.downloadUrl}`);
+                
                 // Show a properly decoded name in the confirmation modal
                 let displayName;
                 try {
@@ -363,4 +417,11 @@ $(document).ready(function () {
             $('#confirmationModal').modal('hide');
         }
     });
+    
+    // ==========================================
+    // Debug Information
+    // ==========================================
+    console.log('Scribd downloader initialized with cookie support');
+    console.log('CORS Proxy URL:', URLS.corsProxy);
+    console.log('All fetch requests will include credentials for cookie support');
 });
