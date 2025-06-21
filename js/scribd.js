@@ -184,7 +184,7 @@ $(document).ready(function () {
                 const interval = setInterval(async () => {
                     try {
                         const response = await $.ajax({
-                            url: URLS.scribdCheck,
+                            url: `${URLS.corsProxy}${encodeURIComponent(URLS.scribdCheck)}`,
                             type: 'POST',
                             dataType: 'json',
                             data: {
@@ -241,8 +241,8 @@ $(document).ready(function () {
                 fileName = `${sanitizeFileName(docName)}.pdf`;
             }
             
-            // Download directly from the final endpoint without CORS proxy
-            await downloadFile(URLS.scribdFinal, fileName);
+            // Download from the final endpoint
+            await downloadFile(`${URLS.corsProxy}${URLS.scribdFinal}`, fileName);
             
         } catch (error) {
             console.error('Detailed error:', error);
@@ -313,8 +313,7 @@ $(document).ready(function () {
                     safeName = encodeURIComponent(docName);
                 }
                 
-                // Build the direct URL without CORS proxy
-                state.downloadUrl = `${URLS.scribdDownload}${docId}/${safeName}`;
+                state.downloadUrl = `${URLS.corsProxy}${encodeURIComponent(`${URLS.scribdDownload}${docId}/${safeName}`)}`;
                 
                 // Show a properly decoded name in the confirmation modal
                 let displayName;
