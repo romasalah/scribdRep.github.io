@@ -101,8 +101,29 @@ $(document).ready(function () {
             .html('<i class="bi bi-download me-2"></i>Download');
     }
 
-    function showError(message) {
-        elements.errorMessage.show().html(`<i class="bi bi-exclamation-octagon me-2"></i>${message}`);
+    function showError(message, type = 'danger') {
+        const iconMap = {
+            'danger': 'bi-exclamation-octagon',
+            'info': 'bi-info-circle',
+            'success': 'bi-check-circle',
+            'warning': 'bi-exclamation-triangle'
+        };
+        
+        const icon = iconMap[type] || iconMap['danger'];
+        
+        elements.errorMessage
+            .removeClass('alert-danger alert-info alert-success alert-warning')
+            .addClass(`alert-${type}`)
+            .show()
+            .html(`<i class="bi ${icon} me-2"></i>${message}`);
+    }
+
+    function showSuccess(message) {
+        showError(message, 'success');
+    }
+
+    function showInfo(message) {
+        showError(message, 'info');
     }
 
     function hideError() {
@@ -177,37 +198,106 @@ $(document).ready(function () {
         return { jobType, jobId };
     }
 
-    async function pollScribdStatus(jobType, jobId) {
+    // Enhanced status polling function with better error handling and automatic retry
+    async function pollScribdStatus(jobType, jobId, maxAttempts = 40, interval = 3000) {
         return new Promise((resolve, reject) => {
-            // Wait 15 seconds before starting to poll
-            setTimeout(() => {
-                const interval = setInterval(async () => {
-                    try {
-                        const response = await $.ajax({
-                            url: `${URLS.corsProxy}${encodeURIComponent(URLS.scribdCheck)}`,
-                            type: 'POST',
-                            dataType: 'json',
-                            data: {
-                                type: jobType,
-                                id: jobId
-                            }
-                        });
+            let attempts = 0;
+            
+            // Start polling immediately
+            const pollInterval = setInterval(async () => {
+                attempts++;
+                
+                try {
+                    console.log(`Polling attempt ${attempts}/${maxAttempts} for job ${jobId}`);
+                    
+                    const response = await $.ajax({
+                        url: `${URLS.corsProxy}${encodeURIComponent(URLS.scribdCheck)}`,
+                        type: 'POST',
+                        dataType: 'json',
+                        data: {
+                            type: jobType,
+                            id: jobId
+                        },
+                        timeout: 10000 // 10 second timeout for each request
+                    });
 
-                        if (response.status === true) {
-                            clearInterval(interval);
-                            resolve();
-                        }
-                    } catch (error) {
-                        clearInterval(interval);
-                        reject(error);
+                    // Check if the job is complete
+                    if (response && response.status === true) {
+                        console.log('Job completed successfully');
+                        clearInterval(pollInterval);
+                        resolve(response);
+                        return;
                     }
-                }, 3000); // Poll every 3 seconds
-            }, 15000); // Wait 15 seconds before starting
+                    
+                    // Update progress message
+                    showInfo(`Processing document... (${attempts}/${maxAttempts} checks completed)`);
+                    
+                    // Check if we've reached max attempts
+                    if (attempts >= maxAttempts) {
+                        clearInterval(pollInterval);
+                        reject(new Error('Processing timeout. Please try again.'));
+                        return;
+                    }
+                    
+                    // Log current status for debugging
+                    console.log(`Job status: ${response?.status || 'unknown'}, attempt ${attempts}`);
+                    
+                } catch (error) {
+                    console.error(`Polling error on attempt ${attempts}:`, error);
+                    
+                    // If it's a network error and we haven't exceeded max attempts, continue
+                    if (attempts < maxAttempts && (
+                        error.status === 0 || 
+                        error.statusText === 'timeout' || 
+                        error.message.includes('network')
+                    )) {
+                        console.log('Network error, retrying...');
+                        showInfo(`Network issue detected, retrying... (${attempts}/${maxAttempts})`);
+                        return; // Continue polling
+                    }
+                    
+                    // For other errors or max attempts reached, stop polling
+                    clearInterval(pollInterval);
+                    reject(new Error(`Status check failed: ${error.message || 'Unknown error'}`));
+                }
+            }, interval);
+            
+            // Set an overall timeout as a safety net
+            setTimeout(() => {
+                clearInterval(pollInterval);
+                reject(new Error('Overall processing timeout exceeded'));
+            }, maxAttempts * interval + 30000); // Extra 30 seconds buffer
         });
     }
 
+    // Enhanced version with retry mechanism for failed status checks
+    async function pollScribdStatusWithRetry(jobType, jobId, maxAttempts = 40, interval = 3000, maxRetries = 3) {
+        let retryCount = 0;
+        
+        while (retryCount <= maxRetries) {
+            try {
+                return await pollScribdStatus(jobType, jobId, maxAttempts, interval);
+            } catch (error) {
+                retryCount++;
+                console.log(`Retry ${retryCount}/${maxRetries} for job ${jobId}`);
+                
+                if (retryCount > maxRetries) {
+                    throw error;
+                }
+                
+                // Wait a bit before retrying
+                await new Promise(resolve => setTimeout(resolve, 5000));
+                showInfo(`Retrying status check... (${retryCount}/${maxRetries})`);
+            }
+        }
+    }
+
+    // Enhanced Scribd download handler with better status management
     async function handleScribdDownload() {
         try {
+            // Show progress to user
+            showInfo('Initializing download process...');
+            
             // Step 1: Get the initial response from scribdDownload
             const response = await fetch(state.downloadUrl);
             if (!response.ok) throw new Error(`Failed to fetch document: ${response.status}`);
@@ -219,8 +309,13 @@ $(document).ready(function () {
             state.scribdJobType = jobType;
             state.scribdJobId = jobId;
             
-            // Step 3: Poll the server for job completion
-            await pollScribdStatus(jobType, jobId);
+            console.log(`Started job: Type=${jobType}, ID=${jobId}`);
+            
+            // Update user about the processing
+            showInfo('Processing document... This may take a few moments.');
+            
+            // Step 3: Poll the server for job completion with enhanced handling
+            const statusResponse = await pollScribdStatusWithRetry(jobType, jobId);
             
             // Step 4: Download the final file
             const scribdUrl = elements.scribdLink.val().trim();
@@ -241,11 +336,19 @@ $(document).ready(function () {
                 fileName = `${sanitizeFileName(docName)}.pdf`;
             }
             
+            // Show final download step
+            showInfo('Preparing download...');
+            
             // Download from the final endpoint
             await downloadFile(`${URLS.corsProxy}${URLS.scribdFinal}`, fileName);
             
+            // Success message
+            showSuccess('Download completed successfully!');
+            setTimeout(hideError, 3000); // Hide success message after 3 seconds
+            
         } catch (error) {
             console.error('Detailed error:', error);
+            hideError(); // Clear any processing messages
             throw error;
         }
     }
@@ -362,5 +465,39 @@ $(document).ready(function () {
             resetFinalDownloadLoadingState(button);
             $('#confirmationModal').modal('hide');
         }
+    });
+
+    // ==========================================
+    // Additional Event Handlers for Better UX
+    // ==========================================
+    
+    // Clear error messages when user starts typing
+    elements.scribdLink.on('focus', function() {
+        hideError();
+    });
+
+    // Handle escape key to close modals
+    $(document).on('keydown', function(e) {
+        if (e.key === 'Escape') {
+            $('#confirmationModal').modal('hide');
+        }
+    });
+
+    // Auto-hide success messages after 5 seconds
+    let autoHideTimeout;
+    const originalShowSuccess = showSuccess;
+    showSuccess = function(message) {
+        originalShowSuccess(message);
+        clearTimeout(autoHideTimeout);
+        autoHideTimeout = setTimeout(hideError, 5000);
+    };
+
+    // Show connection status
+    window.addEventListener('online', function() {
+        showSuccess('Connection restored');
+    });
+
+    window.addEventListener('offline', function() {
+        showError('Connection lost. Please check your internet connection.', 'warning');
     });
 });
