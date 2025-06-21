@@ -57,6 +57,26 @@ $(document).ready(function () {
         }
     }
 
+    function getOriginalScribdFileName(docName) {
+        try {
+            // Decode the URL-encoded document name to get the original
+            const decodedName = decodeURIComponent(docName);
+            // Replace hyphens with spaces for better readability
+            const cleanName = decodedName.replace(/-/g, ' ');
+            // Only remove truly problematic characters that would break downloads
+            // Keep most special characters and international characters
+            return cleanName
+                .replace(/[<>:"/\\|?*]/g, '')  // Only remove filesystem-unsafe chars
+                .trim();
+        } catch (e) {
+            // If decoding fails, still try to clean up the name minimally
+            return docName
+                .replace(/-/g, ' ')
+                .replace(/[<>:"/\\|?*]/g, '')
+                .trim();
+        }
+    }
+
     function parseSlideShareUrl(url) {
         const match = url.match(validDomains.slideshare);
         if (!match) return null;
@@ -232,17 +252,11 @@ $(document).ready(function () {
             
             const [, docId, docName] = match;
             
-            // Properly handle the docName for international characters
-            let fileName;
-            try {
-                const decodedDocName = decodeURIComponent(docName);
-                fileName = `${sanitizeFileName(decodedDocName)}.pdf`;
-            } catch (e) {
-                fileName = `${sanitizeFileName(docName)}.pdf`;
-            }
+            // Use original filename for Scribd downloads - minimal sanitization
+            const originalFileName = `${getOriginalScribdFileName(docName)}.pdf`;
             
             // Download from the final endpoint
-            await downloadFile(`${URLS.corsProxy}${URLS.scribdFinal}`, fileName);
+            await downloadFile(`${URLS.corsProxy}${URLS.scribdFinal}`, originalFileName);
             
         } catch (error) {
             console.error('Detailed error:', error);
@@ -254,6 +268,7 @@ $(document).ready(function () {
         if (!state.slideshareDocInfo) throw new Error('No SlideShare document info');
         
         const fileExt = elements.sliderToggleFormat.prop('checked') ? 'pptx' : 'pdf';
+        // Keep sanitized names for SlideShare (unchanged behavior)
         const fileName = `${sanitizeFileName(state.slideshareDocInfo.documentName)}.${fileExt}`;
         await downloadFile(state.downloadUrl, fileName);
     }
@@ -315,14 +330,8 @@ $(document).ready(function () {
                 
                 state.downloadUrl = `${URLS.corsProxy}${encodeURIComponent(`${URLS.scribdDownload}${docId}/${safeName}`)}`;
                 
-                // Show a properly decoded name in the confirmation modal
-                let displayName;
-                try {
-                    displayName = decodeURIComponent(docName).replace(/-/g, ' ');
-                } catch (e) {
-                    displayName = docName.replace(/-/g, ' ');
-                }
-                
+                // Show the original decoded name in the confirmation modal
+                const displayName = getOriginalScribdFileName(docName);
                 showConfirmationModal(displayName, 'PDF');
             } else {
                 state.downloadUrl = await processSlideShare(input);
