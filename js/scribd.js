@@ -57,26 +57,6 @@ $(document).ready(function () {
         }
     }
 
-    function getOriginalScribdFileName(docName) {
-        try {
-            // Decode the URL-encoded document name to get the original
-            const decodedName = decodeURIComponent(docName);
-            // Replace hyphens with spaces for better readability
-            const cleanName = decodedName.replace(/-/g, ' ');
-            // Only remove truly problematic characters that would break downloads
-            // Keep most special characters and international characters
-            return cleanName
-                .replace(/[<>:"/\\|?*]/g, '')  // Only remove filesystem-unsafe chars
-                .trim();
-        } catch (e) {
-            // If decoding fails, still try to clean up the name minimally
-            return docName
-                .replace(/-/g, ' ')
-                .replace(/[<>:"/\\|?*]/g, '')
-                .trim();
-        }
-    }
-
     function parseSlideShareUrl(url) {
         const match = url.match(validDomains.slideshare);
         if (!match) return null;
@@ -142,38 +122,6 @@ $(document).ready(function () {
     async function downloadFile(url, fileName) {
         const response = await fetch(url);
         if (!response.ok) throw new Error('Failed to download file');
-        
-        const blob = await response.blob();
-        const blobUrl = URL.createObjectURL(blob);
-        
-        const link = document.createElement('a');
-        link.href = blobUrl;
-        link.download = fileName;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(blobUrl);
-    }
-
-    async function downloadFileWithOriginalName(url) {
-        const response = await fetch(url);
-        if (!response.ok) throw new Error('Failed to download file');
-        
-        // Extract original filename from Content-Disposition header
-        let fileName = 'document.pdf'; // fallback name
-        const contentDisposition = response.headers.get('Content-Disposition');
-        if (contentDisposition) {
-            const fileNameMatch = contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
-            if (fileNameMatch && fileNameMatch[1]) {
-                fileName = fileNameMatch[1].replace(/['"]/g, '');
-                // Decode if it's URL encoded
-                try {
-                    fileName = decodeURIComponent(fileName);
-                } catch (e) {
-                    // Keep original if decode fails
-                }
-            }
-        }
         
         const blob = await response.blob();
         const blobUrl = URL.createObjectURL(blob);
@@ -274,8 +222,27 @@ $(document).ready(function () {
             // Step 3: Poll the server for job completion
             await pollScribdStatus(jobType, jobId);
             
-            // Step 4: Download the final file with original filename from server
-            await downloadFileWithOriginalName(`${URLS.corsProxy}${URLS.scribdFinal}`);
+            // Step 4: Download the final file
+            const scribdUrl = elements.scribdLink.val().trim();
+            const match = scribdUrl.match(validDomains.scribd);
+            
+            if (!match || match.length < 3) {
+                throw new Error('Invalid Scribd URL format');
+            }
+            
+            const [, docId, docName] = match;
+            
+            // Properly handle the docName for international characters
+            let fileName;
+            try {
+                const decodedDocName = decodeURIComponent(docName);
+                fileName = `${sanitizeFileName(decodedDocName)}.pdf`;
+            } catch (e) {
+                fileName = `${sanitizeFileName(docName)}.pdf`;
+            }
+            
+            // Download from the final endpoint
+            await downloadFile(`${URLS.corsProxy}${URLS.scribdFinal}`, fileName);
             
         } catch (error) {
             console.error('Detailed error:', error);
@@ -287,7 +254,6 @@ $(document).ready(function () {
         if (!state.slideshareDocInfo) throw new Error('No SlideShare document info');
         
         const fileExt = elements.sliderToggleFormat.prop('checked') ? 'pptx' : 'pdf';
-        // Keep sanitized names for SlideShare (unchanged behavior)
         const fileName = `${sanitizeFileName(state.slideshareDocInfo.documentName)}.${fileExt}`;
         await downloadFile(state.downloadUrl, fileName);
     }
@@ -349,8 +315,14 @@ $(document).ready(function () {
                 
                 state.downloadUrl = `${URLS.corsProxy}${encodeURIComponent(`${URLS.scribdDownload}${docId}/${safeName}`)}`;
                 
-                // Show the original decoded name in the confirmation modal
-                const displayName = getOriginalScribdFileName(docName);
+                // Show a properly decoded name in the confirmation modal
+                let displayName;
+                try {
+                    displayName = decodeURIComponent(docName).replace(/-/g, ' ');
+                } catch (e) {
+                    displayName = docName.replace(/-/g, ' ');
+                }
+                
                 showConfirmationModal(displayName, 'PDF');
             } else {
                 state.downloadUrl = await processSlideShare(input);
