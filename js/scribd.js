@@ -10,7 +10,9 @@ $(document).ready(function () {
     let state = {
         downloadUrl: '',
         currentService: '',
-        slideshareDocInfo: null
+        slideshareDocInfo: null,
+        scribdJobId: '',
+        scribdJobType: ''
     };
 
     // ==========================================
@@ -163,32 +165,64 @@ $(document).ready(function () {
         return `${URLS.slideshareApi.download}?${new URLSearchParams(postResponse).toString()}`;
     }
 
+    async function extractScribdJobInfo(htmlText) {
+        // Extract job information from the script tag
+        const scriptMatch = htmlText.match(/<script>[\s\S]*?\$\.ajax\({[\s\S]*?data:\s*{[\s\S]*?type:\s*['"]([^'"]+)['"][\s\S]*?id:\s*['"]([^'"]+)['"][\s\S]*?}\s*,[\s\S]*?}\);[\s\S]*?<\/script>/);
+        
+        if (!scriptMatch) {
+            throw new Error('Job information not found in response');
+        }
+        
+        const [, jobType, jobId] = scriptMatch;
+        return { jobType, jobId };
+    }
+
+    async function pollScribdStatus(jobType, jobId) {
+        return new Promise((resolve, reject) => {
+            // Wait 15 seconds before starting to poll
+            setTimeout(() => {
+                const interval = setInterval(async () => {
+                    try {
+                        const response = await $.ajax({
+                            url: URLS.scribdCheck,
+                            type: 'POST',
+                            dataType: 'json',
+                            data: {
+                                type: jobType,
+                                id: jobId
+                            }
+                        });
+
+                        if (response.status === true) {
+                            clearInterval(interval);
+                            resolve();
+                        }
+                    } catch (error) {
+                        clearInterval(interval);
+                        reject(error);
+                    }
+                }, 3000); // Poll every 3 seconds
+            }, 15000); // Wait 15 seconds before starting
+        });
+    }
+
     async function handleScribdDownload() {
         try {
+            // Step 1: Get the initial response from scribdDownload
             const response = await fetch(state.downloadUrl);
             if (!response.ok) throw new Error(`Failed to fetch document: ${response.status}`);
             
-            // Get response as text since it's HTML, not JSON
             const htmlText = await response.text();
             
-            // Extract the iframe src attribute with a specific pattern matching this site's format
-            const iframeMatch = htmlText.match(/<iframe src="([^"]+)"/i);
+            // Step 2: Extract job information from the script tag
+            const { jobType, jobId } = await extractScribdJobInfo(htmlText);
+            state.scribdJobType = jobType;
+            state.scribdJobId = jobId;
             
-            if (!iframeMatch) {
-                throw new Error('Document iframe not found in HTML response');
-            }
+            // Step 3: Poll the server for job completion
+            await pollScribdStatus(jobType, jobId);
             
-            // Extract the file URL from the iframe src
-            const iframeSrc = iframeMatch[1];
-            const fileUrlParam = iframeSrc.split('?file=')[1];
-            
-            if (!fileUrlParam) {
-                throw new Error('File URL parameter not found in iframe src');
-            }
-            
-            // Get the actual file URL (remove zoom and handle URL encoding)
-            const fileUrl = decodeURIComponent(fileUrlParam.split('#')[0]);
-            
+            // Step 4: Download the final file
             const scribdUrl = elements.scribdLink.val().trim();
             const match = scribdUrl.match(validDomains.scribd);
             
@@ -199,15 +233,16 @@ $(document).ready(function () {
             const [, docId, docName] = match;
             
             // Properly handle the docName for international characters
+            let fileName;
             try {
                 const decodedDocName = decodeURIComponent(docName);
-                const fileName = `${sanitizeFileName(decodedDocName)}.pdf`;
-                await downloadFile(`${URLS.proxyEndpoint}${fileUrl}`, fileName);
+                fileName = `${sanitizeFileName(decodedDocName)}.pdf`;
             } catch (e) {
-                // Fallback if decoding fails
-                const fileName = `${sanitizeFileName(docName)}.pdf`;
-                await downloadFile(`${URLS.proxyEndpoint}${fileUrl}`, fileName);
+                fileName = `${sanitizeFileName(docName)}.pdf`;
             }
+            
+            // Download from the final endpoint
+            await downloadFile(URLS.scribdFinal, fileName);
             
         } catch (error) {
             console.error('Detailed error:', error);
