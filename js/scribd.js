@@ -216,24 +216,26 @@ $(document).ready(function () {
 
     async function getScribdInfo(scribdUrl) {
         try {
-            // Make simultaneous calls to both APIs
-            const [countResponse, predownloadResponse] = await Promise.all([
-                // Get page count
-                $.ajax({
-                    url: `${URLS.scribdCount}${encodeURIComponent(scribdUrl)}`,
-                    method: 'GET',
-                    dataType: 'json'
-                }),
-                // Get download ID  
-                $.ajax({
-                    url: `${URLS.scribdPredownload}${encodeURIComponent(scribdUrl)}`,
-                    method: 'GET',
-                    dataType: 'json'
-                })
-            ]);
+            // First get page count - start render simulation immediately after this
+            const countResponse = await $.ajax({
+                url: `${URLS.scribdCount}${encodeURIComponent(scribdUrl)}`,
+                method: 'GET',
+                dataType: 'json'
+            });
 
-            // Extract page count - updated to match API response format
+            // Extract page count and start render simulation immediately
             state.scribdPageCount = countResponse?.pageCount || countResponse?.pages || countResponse?.count || 0;
+            state.scribdRenderTime = calculateRenderTime(state.scribdPageCount);
+            
+            // Start page processing simulation immediately - don't wait for jobId
+            const simulationPromise = simulatePageProcessing();
+            
+            // Meanwhile, get download ID in parallel
+            const predownloadResponse = await $.ajax({
+                url: `${URLS.scribdPredownload}${encodeURIComponent(scribdUrl)}`,
+                method: 'GET',
+                dataType: 'json'
+            });
             
             // Extract job ID
             state.scribdJobId = predownloadResponse?.id || predownloadResponse?.job_id;
@@ -241,9 +243,9 @@ $(document).ready(function () {
             if (!state.scribdJobId) {
                 throw new Error('Failed to get download ID from server');
             }
-
-            // Calculate render time
-            state.scribdRenderTime = calculateRenderTime(state.scribdPageCount);
+            
+            // Wait for simulation to complete
+            await simulationPromise;
             
             return {
                 pageCount: state.scribdPageCount,
@@ -285,13 +287,10 @@ $(document).ready(function () {
         try {
             const scribdUrl = elements.scribdLink.val().trim();
             
-            // Get page count and job ID from API calls
-            const scribdInfo = await getScribdInfo(scribdUrl);
+            // This will get pageCount, start simulation immediately, then get jobId
+            await getScribdInfo(scribdUrl);
             
-            // Immediately start the real-time simulation with the page count we got
-            await simulatePageProcessing();
-            
-            // After simulation is complete, download using the job ID
+            // Simulation is already complete, now download using the job ID
             const downloadUrl = `${URLS.scribdFinal}${state.scribdJobId}`;
             
             // Get the document name for the filename
