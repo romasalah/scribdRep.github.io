@@ -121,6 +121,15 @@ $(document).ready(function () {
             Download link will open in <i class="bi bi-box-arrow-up-right mx-1"></i>New Window. 
             Please allow Popup to download.
         `);
+        
+        // Reset to default note text after 5 seconds
+        setTimeout(() => {
+            elements.noteText.html(`
+                <i class="bi bi-info-circle me-1"></i>
+                <strong>Note:</strong> Download link will open in <i class="bi bi-box-arrow-up-right mx-1"></i>New Window. 
+                Please allow Popup to download.
+            `);
+        }, 5000);
     }
 
     // ==========================================
