@@ -1,11 +1,11 @@
 // URL Configuration for Scribd and SlideShare APIs
 const URLS = {
     // Scribd download endpoint
-    scribdDownload: 'https://compress.tacz.info/?fileurl=https://scribd.vpdfs.com/pdownload/',
+    scribdCount: 'https://api2.slidesdownloader.com:8443/count?url=',
 
     // New Scribd endpoints
-    scribdCheck: 'https://compress.tacz.info/check-status',
-    scribdFinal: 'https://compress.tacz.info/download/compresspdf',
+    scribdPredownload: 'https://api2.slidesdownloader.com:8443/?url=',
+    scribdFinal: 'https://api2.slidesdownloader.com:8443/dl?id=',
 
     // CORS proxy for bypassing CORS restrictions
     corsProxy: 'https://render-proxy.deno.dev/proxy/',
