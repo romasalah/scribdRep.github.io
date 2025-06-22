@@ -98,8 +98,7 @@ $(document).ready(function () {
         const formattedTime = formatRenderTime(renderTime);
         elements.noteText.html(`
             <i class="bi bi-info-circle me-1"></i>
-            <strong>Note:</strong> Render time starts with a delay of 5 seconds and 600ms x page count (~${formattedTime}). 
-            Download link will open in <i class="bi bi-box-arrow-up-right mx-1"></i>New Window. 
+            <strong>Note:</strong> Download link will open in <i class="bi bi-box-arrow-up-right mx-1"></i>New Window. 
             Please allow Popup to download.
         `);
     }
@@ -238,16 +237,45 @@ $(document).ready(function () {
         }
     }
 
+    function updateNoteTextRealTime(pageCount, remainingTime) {
+        const totalTime = formatRenderTime(state.scribdRenderTime);
+        const currentTime = formatRenderTime(remainingTime);
+        elements.noteText.html(`
+            <i class="bi bi-info-circle me-1"></i>
+            <strong>Pages:</strong> ${pageCount} | <strong>Total render time:</strong> ${totalTime} | <strong>Remaining:</strong> ${currentTime}<br>
+            Download link will open in <i class="bi bi-box-arrow-up-right mx-1"></i>New Window. 
+            Please allow Popup to download.
+        `);
+    }
+
     async function handleScribdDownload() {
         try {
+            // First get Scribd document info (page count and job ID)
+            const scribdUrl = elements.scribdLink.val().trim();
+            const scribdInfo = await getScribdInfo(scribdUrl);
+            
+            // Start countdown timer and update UI in real time
+            let remainingTime = state.scribdRenderTime;
+            const interval = setInterval(() => {
+                remainingTime -= 1000; // Decrease by 1 second
+                if (remainingTime > 0) {
+                    updateNoteTextRealTime(state.scribdPageCount, remainingTime);
+                } else {
+                    clearInterval(interval);
+                    updateNoteTextRealTime(state.scribdPageCount, 0);
+                }
+            }, 1000);
+            
             // Wait for the calculated render time
             await new Promise(resolve => setTimeout(resolve, state.scribdRenderTime));
+            
+            // Clear the interval
+            clearInterval(interval);
             
             // Download using the job ID
             const downloadUrl = `${URLS.scribdFinal}${state.scribdJobId}`;
             
             // Get the document name for the filename
-            const scribdUrl = elements.scribdLink.val().trim();
             const match = scribdUrl.match(validDomains.scribd);
             
             if (!match || match.length < 3) {
@@ -325,9 +353,6 @@ $(document).ready(function () {
                 
                 const [, docId, docName] = match;
                 
-                // Get Scribd document info (page count and job ID)
-                const scribdInfo = await getScribdInfo(input);
-                
                 // Show a properly decoded name in the confirmation modal
                 let displayName;
                 try {
@@ -335,9 +360,6 @@ $(document).ready(function () {
                 } catch (e) {
                     displayName = docName.replace(/-/g, ' ');
                 }
-                
-                // Update the note text with render time
-                updateNoteText(scribdInfo.renderTime);
                 
                 showConfirmationModal(displayName, 'PDF');
             } else {
