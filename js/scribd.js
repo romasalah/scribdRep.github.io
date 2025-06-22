@@ -12,7 +12,9 @@ $(document).ready(function () {
         currentService: '',
         slideshareDocInfo: null,
         scribdJobId: '',
-        scribdJobType: ''
+        scribdJobType: '',
+        scribdPageCount: 0,
+        scribdRenderTime: 0
     };
 
     // ==========================================
@@ -26,7 +28,8 @@ $(document).ready(function () {
         scribdLink: $('#scribdLink'),
         finalDownloadBtn: $('#finalDownloadBtn'),
         sliderToggle: $('#sliderToggle'),
-        sliderToggleFormat: $('#sliderToggleFormat')
+        sliderToggleFormat: $('#sliderToggleFormat'),
+        noteText: $('.note-text')
     };
 
     // Initialize UI
@@ -72,6 +75,33 @@ $(document).ready(function () {
                 .replace(/[^a-zA-Z0-9\u0400-\u04FF\s]/g, '') // Allow Cyrillic chars range
                 .trim()
         };
+    }
+
+    function calculateRenderTime(pageCount) {
+        const baseDelay = 5000; // 5 seconds
+        const perPageDelay = 600; // 600ms per page
+        return baseDelay + (pageCount * perPageDelay);
+    }
+
+    function formatRenderTime(milliseconds) {
+        const seconds = Math.ceil(milliseconds / 1000);
+        if (seconds < 60) {
+            return `${seconds} seconds`;
+        } else {
+            const minutes = Math.floor(seconds / 60);
+            const remainingSeconds = seconds % 60;
+            return remainingSeconds > 0 ? `${minutes} minutes ${remainingSeconds} seconds` : `${minutes} minutes`;
+        }
+    }
+
+    function updateNoteText(renderTime) {
+        const formattedTime = formatRenderTime(renderTime);
+        elements.noteText.html(`
+            <i class="bi bi-info-circle me-1"></i>
+            <strong>Note:</strong> Render time starts with a delay of 5 seconds and 600ms x page count (~${formattedTime}). 
+            Download link will open in <i class="bi bi-box-arrow-up-right mx-1"></i>New Window. 
+            Please allow Popup to download.
+        `);
     }
 
     // ==========================================
@@ -165,64 +195,58 @@ $(document).ready(function () {
         return `${URLS.slideshareApi.download}?${new URLSearchParams(postResponse).toString()}`;
     }
 
-    async function extractScribdJobInfo(htmlText) {
-        // Extract job information from the script tag
-        const scriptMatch = htmlText.match(/<script>[\s\S]*?\$\.ajax\({[\s\S]*?data:\s*{[\s\S]*?type:\s*['"]([^'"]+)['"][\s\S]*?id:\s*['"]([^'"]+)['"][\s\S]*?}\s*,[\s\S]*?}\);[\s\S]*?<\/script>/);
-        
-        if (!scriptMatch) {
-            throw new Error('Job information not found in response');
+    async function getScribdInfo(scribdUrl) {
+        try {
+            // Make simultaneous calls to both APIs
+            const [countResponse, predownloadResponse] = await Promise.all([
+                // Get page count
+                $.ajax({
+                    url: `${URLS.scribdCount}${encodeURIComponent(scribdUrl)}`,
+                    method: 'GET',
+                    dataType: 'json'
+                }),
+                // Get download ID  
+                $.ajax({
+                    url: `${URLS.scribdPredownload}${encodeURIComponent(scribdUrl)}`,
+                    method: 'GET',
+                    dataType: 'json'
+                })
+            ]);
+
+            // Extract page count
+            state.scribdPageCount = countResponse?.pages || countResponse?.count || 0;
+            
+            // Extract job ID
+            state.scribdJobId = predownloadResponse?.id || predownloadResponse?.job_id;
+            
+            if (!state.scribdJobId) {
+                throw new Error('Failed to get download ID from server');
+            }
+
+            // Calculate render time
+            state.scribdRenderTime = calculateRenderTime(state.scribdPageCount);
+            
+            return {
+                pageCount: state.scribdPageCount,
+                jobId: state.scribdJobId,
+                renderTime: state.scribdRenderTime
+            };
+
+        } catch (error) {
+            console.error('Error getting Scribd info:', error);
+            throw new Error('Failed to get document information');
         }
-        
-        const [, jobType, jobId] = scriptMatch;
-        return { jobType, jobId };
-    }
-
-    async function pollScribdStatus(jobType, jobId) {
-        return new Promise((resolve, reject) => {
-            // Wait 15 seconds before starting to poll
-            setTimeout(() => {
-                const interval = setInterval(async () => {
-                    try {
-                        const response = await $.ajax({
-                            url: `${URLS.corsProxy}${encodeURIComponent(URLS.scribdCheck)}`,
-                            type: 'POST',
-                            dataType: 'json',
-                            data: {
-                                type: jobType,
-                                id: jobId
-                            }
-                        });
-
-                        if (response.status === true) {
-                            clearInterval(interval);
-                            resolve();
-                        }
-                    } catch (error) {
-                        clearInterval(interval);
-                        reject(error);
-                    }
-                }, 3000); // Poll every 3 seconds
-            }, 15000); // Wait 15 seconds before starting
-        });
     }
 
     async function handleScribdDownload() {
         try {
-            // Step 1: Get the initial response from scribdDownload
-            const response = await fetch(state.downloadUrl);
-            if (!response.ok) throw new Error(`Failed to fetch document: ${response.status}`);
+            // Wait for the calculated render time
+            await new Promise(resolve => setTimeout(resolve, state.scribdRenderTime));
             
-            const htmlText = await response.text();
+            // Download using the job ID
+            const downloadUrl = `${URLS.scribdFinal}${state.scribdJobId}`;
             
-            // Step 2: Extract job information from the script tag
-            const { jobType, jobId } = await extractScribdJobInfo(htmlText);
-            state.scribdJobType = jobType;
-            state.scribdJobId = jobId;
-            
-            // Step 3: Poll the server for job completion
-            await pollScribdStatus(jobType, jobId);
-            
-            // Step 4: Download the final file
+            // Get the document name for the filename
             const scribdUrl = elements.scribdLink.val().trim();
             const match = scribdUrl.match(validDomains.scribd);
             
@@ -241,8 +265,8 @@ $(document).ready(function () {
                 fileName = `${sanitizeFileName(docName)}.pdf`;
             }
             
-            // Download from the final endpoint
-            await downloadFile(`${URLS.corsProxy}${URLS.scribdFinal}`, fileName);
+            // Download the file
+            await downloadFile(downloadUrl, fileName);
             
         } catch (error) {
             console.error('Detailed error:', error);
@@ -301,19 +325,8 @@ $(document).ready(function () {
                 
                 const [, docId, docName] = match;
                 
-                // Use a more flexible approach for encoding the URL
-                let safeName;
-                try {
-                    // Try to decode first in case it's already URL-encoded
-                    const decodedName = decodeURIComponent(docName);
-                    // Then re-encode properly
-                    safeName = encodeURIComponent(decodedName);
-                } catch (e) {
-                    // If decoding fails, use as is but ensure it's encoded
-                    safeName = encodeURIComponent(docName);
-                }
-                
-                state.downloadUrl = `${URLS.corsProxy}${encodeURIComponent(`${URLS.scribdDownload}${docId}/${safeName}`)}`;
+                // Get Scribd document info (page count and job ID)
+                const scribdInfo = await getScribdInfo(input);
                 
                 // Show a properly decoded name in the confirmation modal
                 let displayName;
@@ -322,6 +335,9 @@ $(document).ready(function () {
                 } catch (e) {
                     displayName = docName.replace(/-/g, ' ');
                 }
+                
+                // Update the note text with render time
+                updateNoteText(scribdInfo.renderTime);
                 
                 showConfirmationModal(displayName, 'PDF');
             } else {
@@ -341,10 +357,6 @@ $(document).ready(function () {
 
     elements.finalDownloadBtn.on('click', async function (e) {
         e.preventDefault();
-        if (!state.downloadUrl) {
-            $('#confirmationModal').modal('hide');
-            return;
-        }
 
         const button = $(this);
         setFinalDownloadLoadingState(button);
