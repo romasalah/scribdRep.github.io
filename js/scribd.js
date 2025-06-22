@@ -106,8 +106,8 @@ $(document).ready(function () {
     function updateNoteTextRealTime(currentPage, totalPages, totalRenderTime) {
         const formattedTotalTime = formatRenderTime(totalRenderTime);
         elements.noteText.html(`
-            <i class="bi bi-arrow-repeat rotating-icon me-1"></i>
-            <strong>Processing pages:</strong> ${currentPage}/${totalPages} | <strong>Total render time:</strong> ${formattedTotalTime}<br>
+            <i class="bi bi-info-circle me-1"></i>
+            <strong>Pages:</strong> ${currentPage}/${totalPages} | <strong>Total render time:</strong> ${formattedTotalTime}<br>
             Download link will open in <i class="bi bi-box-arrow-up-right mx-1"></i>New Window. 
             Please allow Popup to download.
         `);
@@ -117,7 +117,7 @@ $(document).ready(function () {
         const formattedTotalTime = formatRenderTime(totalRenderTime);
         elements.noteText.html(`
             <i class="bi bi-check-circle me-1"></i>
-            <strong>Pages processed:</strong> ${totalPages}/${totalPages} | <strong>Total render time:</strong> ${formattedTotalTime}<br>
+            <strong>Pages:</strong> ${totalPages}/${totalPages} | <strong>Total render time:</strong> ${formattedTotalTime}<br>
             Download link will open in <i class="bi bi-box-arrow-up-right mx-1"></i>New Window. 
             Please allow Popup to download.
         `);
