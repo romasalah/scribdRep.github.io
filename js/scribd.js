@@ -133,13 +133,6 @@ $(document).ready(function () {
     }
 
     // ==========================================
-    // CORS Proxy Helper Functions
-    // ==========================================
-    function getProxiedUrl(originalUrl) {
-        return `${URLS.corsProxy}${encodeURIComponent(originalUrl)}`;
-    }
-
-    // ==========================================
     // UI State Management
     // ==========================================
     function setLoadingState() {
@@ -232,12 +225,9 @@ $(document).ready(function () {
 
     async function getScribdInfo(scribdUrl) {
         try {
-            // Use CORS proxy for scribdCount endpoint
-            const countUrl = `${URLS.scribdCount}${encodeURIComponent(scribdUrl)}`;
-            const proxiedCountUrl = getProxiedUrl(countUrl);
-            
+            // First get page count - start render simulation immediately after this
             const countResponse = await $.ajax({
-                url: proxiedCountUrl,
+                url: `${URLS.scribdCount}${encodeURIComponent(scribdUrl)}`,
                 method: 'GET',
                 dataType: 'json'
             });
@@ -249,12 +239,9 @@ $(document).ready(function () {
             // Start page processing simulation immediately - don't wait for jobId
             const simulationPromise = simulatePageProcessing();
             
-            // Use CORS proxy for scribdPredownload endpoint
-            const predownloadUrl = `${URLS.scribdPredownload}${encodeURIComponent(scribdUrl)}`;
-            const proxiedPredownloadUrl = getProxiedUrl(predownloadUrl);
-            
+            // Meanwhile, get download ID in parallel
             const predownloadResponse = await $.ajax({
-                url: proxiedPredownloadUrl,
+                url: `${URLS.scribdPredownload}${encodeURIComponent(scribdUrl)}`,
                 method: 'GET',
                 dataType: 'json'
             });
@@ -312,9 +299,8 @@ $(document).ready(function () {
             // This will get pageCount, start simulation immediately, then get jobId
             await getScribdInfo(scribdUrl);
             
-            // Use CORS proxy for scribdFinal endpoint
-            const finalUrl = `${URLS.scribdFinal}${state.scribdJobId}`;
-            const proxiedFinalUrl = getProxiedUrl(finalUrl);
+            // Simulation is already complete, now download using the job ID
+            const downloadUrl = `${URLS.scribdFinal}${state.scribdJobId}`;
             
             // Get the document name for the filename
             const match = scribdUrl.match(validDomains.scribd);
@@ -334,8 +320,8 @@ $(document).ready(function () {
                 fileName = `${sanitizeFileName(docName)}.pdf`;
             }
             
-            // Download the file using the proxied URL
-            await downloadFile(proxiedFinalUrl, fileName);
+            // Download the file
+            await downloadFile(downloadUrl, fileName);
             
         } catch (error) {
             console.error('Detailed error:', error);
