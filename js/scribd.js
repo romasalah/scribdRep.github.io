@@ -361,8 +361,10 @@ $(document).ready(function () {
                     displayName = docName.replace(/-/g, ' ');
                 }
                 
+                // For Scribd, just show the modal - no API calls yet
                 showConfirmationModal(displayName, 'PDF');
             } else {
+                // For SlideShare, we still need to process it here
                 state.downloadUrl = await processSlideShare(input);
                 showConfirmationModal(
                     state.slideshareDocInfo.documentName.replace(/-/g, ' '),
