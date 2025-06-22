@@ -14,7 +14,8 @@ $(document).ready(function () {
         scribdJobId: '',
         scribdJobType: '',
         scribdPageCount: 0,
-        scribdRenderTime: 0
+        scribdRenderTime: 0,
+        currentPage: 0
     };
 
     // ==========================================
@@ -78,9 +79,8 @@ $(document).ready(function () {
     }
 
     function calculateRenderTime(pageCount) {
-        const baseDelay = 3000; // 3 seconds delay before countdown starts
         const perPageDelay = 600; // 600ms per page
-        return baseDelay + (pageCount * perPageDelay);
+        return pageCount * perPageDelay;
     }
 
     function formatRenderTime(milliseconds) {
@@ -99,6 +99,26 @@ $(document).ready(function () {
         elements.noteText.html(`
             <i class="bi bi-info-circle me-1"></i>
             <strong>Note:</strong> Download link will open in <i class="bi bi-box-arrow-up-right mx-1"></i>New Window. 
+            Please allow Popup to download.
+        `);
+    }
+
+    function updateNoteTextRealTime(currentPage, totalPages, totalRenderTime) {
+        const formattedTotalTime = formatRenderTime(totalRenderTime);
+        elements.noteText.html(`
+            <i class="bi bi-arrow-repeat rotating-icon me-1"></i>
+            <strong>Processing pages:</strong> ${currentPage}/${totalPages} | <strong>Total render time:</strong> ${formattedTotalTime}<br>
+            Download link will open in <i class="bi bi-box-arrow-up-right mx-1"></i>New Window. 
+            Please allow Popup to download.
+        `);
+    }
+
+    function showCompletedNoteText(totalPages, totalRenderTime) {
+        const formattedTotalTime = formatRenderTime(totalRenderTime);
+        elements.noteText.html(`
+            <i class="bi bi-check-circle me-1"></i>
+            <strong>Pages processed:</strong> ${totalPages}/${totalPages} | <strong>Total render time:</strong> ${formattedTotalTime}<br>
+            Download link will open in <i class="bi bi-box-arrow-up-right mx-1"></i>New Window. 
             Please allow Popup to download.
         `);
     }
@@ -237,15 +257,28 @@ $(document).ready(function () {
         }
     }
 
-    function updateNoteTextRealTime(pageCount, remainingTime) {
-        const totalTime = formatRenderTime(state.scribdRenderTime);
-        const currentTime = formatRenderTime(remainingTime);
-        elements.noteText.html(`
-            <i class="bi bi-info-circle me-1"></i>
-            <strong>Pages:</strong> ${pageCount} | <strong>Total render time:</strong> ${totalTime} | <strong>Remaining:</strong> ${currentTime}<br>
-            Download link will open in <i class="bi bi-box-arrow-up-right mx-1"></i>New Window. 
-            Please allow Popup to download.
-        `);
+    async function simulatePageProcessing() {
+        return new Promise((resolve) => {
+            state.currentPage = 0;
+            
+            // Wait 5 seconds before starting (hidden from user)
+            setTimeout(() => {
+                const interval = setInterval(() => {
+                    state.currentPage++;
+                    
+                    // Update the UI with current progress
+                    updateNoteTextRealTime(state.currentPage, state.scribdPageCount, state.scribdRenderTime);
+                    
+                    // Check if all pages are processed
+                    if (state.currentPage >= state.scribdPageCount) {
+                        clearInterval(interval);
+                        // Show completion message
+                        showCompletedNoteText(state.scribdPageCount, state.scribdRenderTime);
+                        resolve();
+                    }
+                }, 600); // 600ms per page
+            }, 5000); // 5 second initial delay (hidden)
+        });
     }
 
     async function handleScribdDownload() {
@@ -261,40 +294,8 @@ $(document).ready(function () {
             
             const scribdInfo = await getScribdInfo(scribdUrl);
             
-            // Show initial countdown info (before 3-second delay)
-            const totalRenderTime = formatRenderTime(state.scribdRenderTime);
-            elements.noteText.html(`
-                <i class="bi bi-info-circle me-1"></i>
-                <strong>Pages:</strong> ${state.scribdPageCount} | <strong>Total render time:</strong> ${totalRenderTime} | <strong>Starting in:</strong> 3 seconds<br>
-                Download link will open in <i class="bi bi-box-arrow-up-right mx-1"></i>New Window. 
-                Please allow Popup to download.
-            `);
-            
-            // Wait 3 seconds before starting countdown
-            await new Promise(resolve => setTimeout(resolve, 3000));
-            
-            // Now start the actual countdown timer
-            let remainingTime = state.scribdRenderTime - 3000; // Subtract the 3 seconds we already waited
-            const interval = setInterval(() => {
-                remainingTime -= 1000; // Decrease by 1 second
-                if (remainingTime > 0) {
-                    updateNoteTextRealTime(state.scribdPageCount, remainingTime);
-                } else {
-                    clearInterval(interval);
-                    elements.noteText.html(`
-                        <i class="bi bi-check-circle me-1"></i>
-                        <strong>Pages:</strong> ${state.scribdPageCount} | <strong>Status:</strong> Downloading...<br>
-                        Download link will open in <i class="bi bi-box-arrow-up-right mx-1"></i>New Window. 
-                        Please allow Popup to download.
-                    `);
-                }
-            }, 1000);
-            
-            // Wait for the remaining render time (since we already waited 3 seconds)
-            await new Promise(resolve => setTimeout(resolve, remainingTime));
-            
-            // Clear the interval
-            clearInterval(interval);
+            // Start the page processing simulation
+            await simulatePageProcessing();
             
             // Download using the job ID
             const downloadUrl = `${URLS.scribdFinal}${state.scribdJobId}`;
