@@ -283,19 +283,12 @@ $(document).ready(function () {
 
     async function handleScribdDownload() {
         try {
-            // First get Scribd document info (page count and job ID)
             const scribdUrl = elements.scribdLink.val().trim();
-            
-            // Show initial loading state in note text
-            elements.noteText.html(`
-                <i class="bi bi-arrow-repeat rotating-icon me-1"></i>
-                <strong>Getting document info...</strong> Please wait...
-            `);
             
             // Get page count and job ID from API calls
             const scribdInfo = await getScribdInfo(scribdUrl);
             
-            // Now we have the page count, start the real-time simulation immediately
+            // Immediately start the real-time simulation with the page count we got
             await simulatePageProcessing();
             
             // After simulation is complete, download using the job ID
