@@ -78,7 +78,7 @@ $(document).ready(function () {
     }
 
     function calculateRenderTime(pageCount) {
-        const baseDelay = 5000; // 5 seconds
+        const baseDelay = 3000; // 3 seconds delay before countdown starts
         const perPageDelay = 600; // 600ms per page
         return baseDelay + (pageCount * perPageDelay);
     }
@@ -252,22 +252,46 @@ $(document).ready(function () {
         try {
             // First get Scribd document info (page count and job ID)
             const scribdUrl = elements.scribdLink.val().trim();
+            
+            // Show initial loading state in note text
+            elements.noteText.html(`
+                <i class="bi bi-arrow-repeat rotating-icon me-1"></i>
+                <strong>Getting document info...</strong> Please wait...
+            `);
+            
             const scribdInfo = await getScribdInfo(scribdUrl);
             
-            // Start countdown timer and update UI in real time
-            let remainingTime = state.scribdRenderTime;
+            // Show initial countdown info (before 3-second delay)
+            const totalRenderTime = formatRenderTime(state.scribdRenderTime);
+            elements.noteText.html(`
+                <i class="bi bi-info-circle me-1"></i>
+                <strong>Pages:</strong> ${state.scribdPageCount} | <strong>Total render time:</strong> ${totalRenderTime} | <strong>Starting in:</strong> 3 seconds<br>
+                Download link will open in <i class="bi bi-box-arrow-up-right mx-1"></i>New Window. 
+                Please allow Popup to download.
+            `);
+            
+            // Wait 3 seconds before starting countdown
+            await new Promise(resolve => setTimeout(resolve, 3000));
+            
+            // Now start the actual countdown timer
+            let remainingTime = state.scribdRenderTime - 3000; // Subtract the 3 seconds we already waited
             const interval = setInterval(() => {
                 remainingTime -= 1000; // Decrease by 1 second
                 if (remainingTime > 0) {
                     updateNoteTextRealTime(state.scribdPageCount, remainingTime);
                 } else {
                     clearInterval(interval);
-                    updateNoteTextRealTime(state.scribdPageCount, 0);
+                    elements.noteText.html(`
+                        <i class="bi bi-check-circle me-1"></i>
+                        <strong>Pages:</strong> ${state.scribdPageCount} | <strong>Status:</strong> Downloading...<br>
+                        Download link will open in <i class="bi bi-box-arrow-up-right mx-1"></i>New Window. 
+                        Please allow Popup to download.
+                    `);
                 }
             }, 1000);
             
-            // Wait for the calculated render time
-            await new Promise(resolve => setTimeout(resolve, state.scribdRenderTime));
+            // Wait for the remaining render time (since we already waited 3 seconds)
+            await new Promise(resolve => setTimeout(resolve, remainingTime));
             
             // Clear the interval
             clearInterval(interval);
