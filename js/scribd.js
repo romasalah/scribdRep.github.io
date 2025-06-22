@@ -232,8 +232,8 @@ $(document).ready(function () {
                 })
             ]);
 
-            // Extract page count
-            state.scribdPageCount = countResponse?.pages || countResponse?.count || 0;
+            // Extract page count - updated to match API response format
+            state.scribdPageCount = countResponse?.pageCount || countResponse?.pages || countResponse?.count || 0;
             
             // Extract job ID
             state.scribdJobId = predownloadResponse?.id || predownloadResponse?.job_id;
@@ -292,12 +292,13 @@ $(document).ready(function () {
                 <strong>Getting document info...</strong> Please wait...
             `);
             
+            // Get page count and job ID from API calls
             const scribdInfo = await getScribdInfo(scribdUrl);
             
-            // Start the page processing simulation
+            // Now we have the page count, start the real-time simulation immediately
             await simulatePageProcessing();
             
-            // Download using the job ID
+            // After simulation is complete, download using the job ID
             const downloadUrl = `${URLS.scribdFinal}${state.scribdJobId}`;
             
             // Get the document name for the filename
