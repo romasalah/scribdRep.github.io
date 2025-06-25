@@ -223,50 +223,54 @@ $(document).ready(function () {
         return `${URLS.slideshareApi.download}?${new URLSearchParams(postResponse).toString()}`;
     }
 
-    async function getScribdInfo(scribdUrl) {
-        try {
-            // First get page count - start render simulation immediately after this
-            const countResponse = await $.ajax({
-                url: `${URLS.scribdCount}${encodeURIComponent(scribdUrl)}`,
-                method: 'GET',
-                dataType: 'json'
-            });
+   async function getScribdInfo(scribdUrl) {
+    try {
+        const countUrl = `${URLS.scribdCount}${encodeURIComponent(scribdUrl)}`;
+        console.log('Calling:', countUrl);
 
-            // Extract page count and start render simulation immediately
-            state.scribdPageCount = countResponse?.pageCount || countResponse?.pages || countResponse?.count || 0;
-            state.scribdRenderTime = calculateRenderTime(state.scribdPageCount);
-            
-            // Start page processing simulation immediately - don't wait for jobId
-            const simulationPromise = simulatePageProcessing();
-            
-            // Meanwhile, get download ID in parallel
-            const predownloadResponse = await $.ajax({
-                url: `${URLS.scribdPredownload}${encodeURIComponent(scribdUrl)}`,
-                method: 'GET',
-                dataType: 'json'
-            });
-            
-            // Extract job ID
-            state.scribdJobId = predownloadResponse?.id || predownloadResponse?.job_id;
-            
-            if (!state.scribdJobId) {
-                throw new Error('Failed to get download ID from server');
-            }
-            
-            // Wait for simulation to complete
-            await simulationPromise;
-            
-            return {
-                pageCount: state.scribdPageCount,
-                jobId: state.scribdJobId,
-                renderTime: state.scribdRenderTime
-            };
+        const countResponse = await $.ajax({
+            url: countUrl,
+            method: 'GET',
+            dataType: 'json'
+        });
 
-        } catch (error) {
-            console.error('Error getting Scribd info:', error);
-            throw new Error('Failed to get document information');
+        console.log('Count response:', countResponse);
+
+        state.scribdPageCount = countResponse?.pageCount || 0;
+        state.scribdRenderTime = calculateRenderTime(state.scribdPageCount);
+
+        const simulationPromise = simulatePageProcessing();
+
+        const predownloadUrl = `${URLS.scribdPredownload}${encodeURIComponent(scribdUrl)}`;
+        console.log('Calling:', predownloadUrl);
+
+        const predownloadResponse = await $.ajax({
+            url: predownloadUrl,
+            method: 'GET',
+            dataType: 'json'
+        });
+
+        console.log('Predownload response:', predownloadResponse);
+
+        state.scribdJobId = predownloadResponse?.id || predownloadResponse?.job_id;
+
+        if (!state.scribdJobId) {
+            throw new Error('Failed to get download ID from server');
         }
+
+        await simulationPromise;
+
+        return {
+            pageCount: state.scribdPageCount,
+            jobId: state.scribdJobId,
+            renderTime: state.scribdRenderTime
+        };
+
+    } catch (error) {
+        console.error('Error getting Scribd info:', error);
+        throw new Error('Failed to get document information');
     }
+}
 
     async function simulatePageProcessing() {
         return new Promise((resolve) => {
